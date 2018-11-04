@@ -3,10 +3,12 @@
 import Vue from 'vue'
 import BootstrapVue from 'bootstrap-vue'
 import App from './App'
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+import Vuesax from 'vuesax'
 
-Vue.use(BootstrapVue);
+import 'vuesax/dist/vuesax.css' //Vuesax styles
+import 'material-icons/iconfont/material-icons.css';
+
+Vue.use(Vuesax)
 
 Vue.config.productionTip = false
 

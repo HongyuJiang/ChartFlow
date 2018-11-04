@@ -1,8 +1,94 @@
 <template>
 
 <div id="online-editor">
-  <div id='preview'></div>
-   <div id='editor'></div>
+
+    <vs-navbar class="nabarx">
+      <vs-button class="nav_opener" type="flat" icon="menu"></vs-button>
+
+      <vs-navbar-title>
+        OpenVIS 
+      </vs-navbar-title>
+
+      <vs-spacer></vs-spacer>
+
+      <vs-navbar-item index="0">
+        <a href="#">Home</a>
+      </vs-navbar-item>
+      <vs-navbar-item index="1">
+        <a href="#">News</a>
+      </vs-navbar-item>
+      <vs-navbar-item index="2">
+        <a href="#">Update</a>
+      </vs-navbar-item>
+    </vs-navbar>
+
+     <vs-button @click="active=!active" color="primary" type="filled" style="float:left">Open Sidebar</vs-button>
+    <vs-sidebar parent="body" default-index="1"  color="primary" class="sidebarx" spacer v-model="active">
+
+      <div class="header-sidebar" slot="header">
+        <vs-avatar  size="70px" src="https://randomuser.me/api/portraits/men/85.jpg"/>
+
+        <h4>
+          My Name
+          <vs-button color="primary" icon="more_horiz" type="flat"></vs-button>
+        </h4>
+
+      </div>
+
+      <vs-sidebar-item index="1" icon="question_answer">
+        Dashboard
+      </vs-sidebar-item>
+
+      <vs-sidebar-item index="2" icon="gavel">
+        History
+      </vs-sidebar-item>
+
+      <vs-divider icon="person" position="left">
+        User
+      </vs-divider>
+
+      <vs-sidebar-item index="3" icon="verified_user">
+        Configurations
+      </vs-sidebar-item>
+      <vs-sidebar-item index="4" icon="account_box">
+        Perfile
+      </vs-sidebar-item>
+      <vs-sidebar-item index="5" >
+        Card
+      </vs-sidebar-item>
+
+      <div class="footer-sidebar" slot="footer">
+        <vs-button icon="reply" color="danger" type="flat">log out</vs-button>
+        <vs-button icon="settings" color="primary" type="border"></vs-button>
+      </div>
+
+    </vs-sidebar>
+
+  
+    <vs-row>
+        <vs-col vs-type="flex" vs-justify="center" vs-align="center" vs-w="8">
+             <div id='preview'></div>
+
+        </vs-col>
+        <vs-col vs-type="flex" vs-justify="center" vs-align="center" vs-w="4">
+            <div id='editor'>
+
+                <vs-list>
+                    <vs-list-header icon="supervisor_account" title="Group 1"></vs-list-header>
+                    <vs-list-item icon="check" title="Snickerdoodle" subtitle="An excellent companion"></vs-list-item>
+                    <vs-list-item icon="check" title="Sapporo Haru" subtitle="An excellent polish"></vs-list-item>
+                    
+                    <vs-list-header icon="supervisor_account" title="Group 1"></vs-list-header>
+                    <vs-list-item icon="check" title="Snickerdoodle" subtitle="An excellent companion"></vs-list-item>
+                    <vs-list-item icon="check" title="Sapporo Haru" subtitle="An excellent polish"></vs-list-item>
+                    
+                </vs-list>
+            </div>
+        </vs-col>
+    </vs-row>
+
+  
+  
 </div>
 
 </template>
@@ -35,7 +121,8 @@ export default {
   name:'online-editor',
   data () {
     return {
-        data: data
+        data: data,
+        active:false,
     }
   },
   methods:{
@@ -55,13 +142,13 @@ export default {
 
         vegaEmbed(container,this.data);
 
-        this.chartResize($('#preview').width(), $('#preview').height())
+        this.chartResize($('#preview').width(), $('body').height() * 0.8)
       },
       chartResize(innerWidth, innerHeight){
 
         let height = innerHeight > innerWidth * 2 ? innerWidth * 2 : innerHeight;
 
-        let width = innerWidth/2;
+        let width = innerWidth;
 
         this.data['width'] = width
         
@@ -77,35 +164,45 @@ export default {
 
       window.addEventListener('resize', () => {
 
-        this.chartResize($('#preview').width(), $('#preview').height())
+        this.chartResize($('#preview').width(), $('body').height() * 0.8)
       });
 
   },
 }
 </script>
 
-<style scoped>
+<style lang="stylus">
 
-#preview{
+#online-editor
+  width: 100%;
 
-    height: 90%;
-    width: 50%;
-    right:0px;
-}
+.header-sidebar
+  display flex
+  align-items center
+  justify-content center
+  flex-direction column
+  width 100%
+  h4
+    display flex
+    align-items center
+    justify-content center
+    width 100%
+    > button
+      margin-left 10px
+      
+.footer-sidebar
+  display flex
+  align-items center
+  justify-content space-between
+  width 100%
+  > button
+      border 0px solid rgba(0,0,0,0) !important
+      border-left 1px solid rgba(0,0,0,.07) !important
+      border-radius 0px !important
 
-#editor{
+.vs-sidebar--background{
 
-    height: 90%;
-    width: 50%;
-    left:0px;
-}
-
-#online-editor{
-
-    position: relative;
-    height: 100%;
-    width: 100%;
-
+  background: none !important;
 }
 
 
