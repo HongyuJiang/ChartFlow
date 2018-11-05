@@ -62,6 +62,7 @@
         <vs-button icon="settings" color="primary" type="border"></vs-button>
       </div>
 
+     
     </vs-sidebar>
 
   
@@ -74,13 +75,49 @@
             <div id='editor'>
 
                 <vs-list>
-                    <vs-list-header icon="supervisor_account" title="Group 1"></vs-list-header>
-                    <vs-list-item icon="check" title="Snickerdoodle" subtitle="An excellent companion"></vs-list-item>
-                    <vs-list-item icon="check" title="Sapporo Haru" subtitle="An excellent polish"></vs-list-item>
+                    <vs-list-header class="dark" icon="settings" title="Configration - Style"></vs-list-header>
+                    <vs-list-item icon="create">
+
+                         <vs-select
+                          class="selectExample"
+                          label="Chart Type"
+                          v-model="select3"
+                          icon="arrow_downward"
+                          >
+                          <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in options3" />
+                        </vs-select>
+
+
+                    </vs-list-item>
+                    <vs-list-item icon="color_lens">
+
+                       <span>
+                        <input type="color"  v-model="fillColor">
+                        <input type="text" v-bind:style="{ color: fillColor}" v-model="fillColor" placeholder="#000000"/>
+                       </span>
+                       
+                    </vs-list-item>
                     
-                    <vs-list-header icon="supervisor_account" title="Group 1"></vs-list-header>
-                    <vs-list-item icon="check" title="Snickerdoodle" subtitle="An excellent companion"></vs-list-item>
-                    <vs-list-item icon="check" title="Sapporo Haru" subtitle="An excellent polish"></vs-list-item>
+                    <vs-list-header class="dark" icon="settings" title="Configration - Encoding"></vs-list-header>
+                    <vs-list-item title="X" subtitle="Dim">
+
+                      <span>
+                      <vs-select v-model="dimensions['x']">
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in fields" />
+                      </vs-select>
+                      <vs-select v-model="types['x']" >
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in typesPrefab" />
+                      </vs-select>
+                      </span>
+                    </vs-list-item>
+                     <vs-list-item title="Y" subtitle="Dim">
+                      <vs-select v-model="dimensions['y']" >
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in fields" />
+                      </vs-select>
+                      <vs-select v-model="types['y']">
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in typesPrefab" />
+                      </vs-select>
+                    </vs-list-item>
                     
                 </vs-list>
             </div>
@@ -97,9 +134,10 @@
 import vegaEmbed from 'vega-embed';
 import $ from "jquery";
 
-let data = {
+let global_data = {
     "width": 120,
     "height": 120,
+      "dimensions": ['a', 'b'],
       "description": "A simple bar chart with embedded data.",
       "data": {
         "values": [
@@ -111,18 +149,38 @@ let data = {
       "mark": "bar",
       "encoding": {
         "x": {"field": "a", "type": "ordinal"},
-        "y": {"field": "b", "type": "quantitative"}
-      }
+        "y": {"field": "b", "type": "quantitative"},
+        "color": {"value": "#666"}
+      },
     }
-
-
 
 export default {
   name:'online-editor',
   data () {
     return {
-        data: data,
+        data: global_data,
         active:false,
+        options3:[
+          {text: 'Barchart', value: 'bar'},
+          {text: 'Linechart', value: 'line'},
+          {text: 'ScatterPlot', value: 'point'},
+          {text: 'Bubble', value: 'circle'},
+        ],
+        select3:'bar',
+        fillColor:'#664433',
+        colorOptions:[
+          {text: 'Black', value: '#333333'},
+          {text: 'Red', value: '#993333'},
+        ],
+        fields:this.fieldsExtraction(global_data.dimensions),
+        dimensions: {'x':'none','y':'none'},
+        types: {'x':'none','y':'none'},
+        typesPrefab: [
+          {'text':'Quantitative','value':'quantitative'},
+          {'text':'Ordinal','value':'ordinal'}
+        ],
+        encoding:{'x':{},'y':{}},
+
     }
   },
   methods:{
@@ -132,7 +190,20 @@ export default {
           this.data[prop] = value
           vegaEmbed("#preview", this.data);
       },
+      fieldsExtraction(dimensions){
 
+        let rets = []
+
+        let meta_x = {'text': dimensions[0], 'value': dimensions[0]}
+        let meta_y = {'text': dimensions[1], 'value': dimensions[1]}
+       
+        rets.push(meta_x, meta_y)
+
+        console.log(rets)
+
+        return rets;
+
+      },
       chartInit(container, props){
 
           for (let key in props){
@@ -143,6 +214,26 @@ export default {
         vegaEmbed(container,this.data);
 
         this.chartResize($('#preview').width(), $('body').height() * 0.8)
+      },
+      chartUpdate(container, props){
+
+          for (let key in props){
+
+              this.data[key] = props[key]
+          }
+
+        vegaEmbed(container,this.data);
+      },
+      chartEncodingUpdate(container, props){
+
+          console.log(props)
+
+          for (let key in props){
+
+              this.data['encoding'][key] = props[key]
+          }
+
+        vegaEmbed(container,this.data);
       },
       chartResize(innerWidth, innerHeight){
 
@@ -157,6 +248,57 @@ export default {
         vegaEmbed("#preview", this.data);
       }
 
+  },
+  watch:{
+
+    select3(curVal, oldVal){
+
+      console.log(curVal, oldVal)
+
+      if(curVal != oldVal){
+
+        this.chartUpdate("#preview", {'mark':curVal})
+      }
+    },
+    fillColor(curVal, oldVal){
+
+      if(curVal != oldVal){
+
+        this.chartEncodingUpdate("#preview", {'color':{'value': curVal}})
+      }
+    },
+    dimensions: {
+      handler: function(newVal){
+          this.encoding.x['field'] = newVal.x
+          if(this.encoding.x['type'] != undefined && this.encoding.x['field'] != undefined){
+
+             this.chartEncodingUpdate('#preview', this.encoding)
+          }
+    
+          this.encoding.y['field'] = newVal.y
+          if(this.encoding.y['type'] != undefined && this.encoding.y['field'] != undefined){
+             
+             this.chartEncodingUpdate('#preview', this.encoding)
+          }
+      
+      },
+      deep: true
+    },
+    types: {
+      handler: function(newVal){
+          this.encoding.x['type'] = newVal.x
+          if(this.encoding.x['type'] != undefined && this.encoding.x['field'] != undefined){
+             this.chartEncodingUpdate('#preview', this.encoding)
+          }
+
+          this.encoding.y['type'] = newVal.y
+          if(this.encoding.y['type'] != undefined && this.encoding.y['field'] != undefined){
+             
+             this.chartEncodingUpdate('#preview', this.encoding)
+          }
+      },
+      deep: true
+    }
   },
   mounted(){
 
