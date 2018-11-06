@@ -22,7 +22,7 @@
       </vs-navbar-item>
     </vs-navbar>
   
-    <vs-row>
+     <vs-row vs-h="8">
 
         <vs-col vs-type="flex" vs-justify="left" vs-align="top" vs-w="2">
              <div id='data_list'>
@@ -30,13 +30,13 @@
               <vs-list>
                 <vs-list-header title="Sample Data" color="dark"></vs-list-header>
                 <vs-list-item title="A" subtitle="Ordinal">
-                  <template vs-text="O">
-                    <vs-avatar />
+                  <template>
+                    <vs-avatar text="O"/>
                   </template>
                 </vs-list-item>
                 <vs-list-item title="B" subtitle="Numerical">
-                  <template vs-text="N">
-                    <vs-avatar />
+                  <template>
+                    <vs-avatar text="N"/>
                   </template>
                 </vs-list-item>
           
@@ -52,7 +52,9 @@
         <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="2">
             <div id='editor'>
 
-                <vs-button color="dark" type="filled">Add a layer</vs-button>
+                <vs-button color="dark" type="filled" style="margin-left:10px">Add a layer</vs-button>
+
+                <vs-button v-on:click="addChart" color="steelblue" type="filled" style="margin-left:10px">Add a chart</vs-button>
 
                 <vs-list>
                     <vs-list-header class="dark" icon="settings" title="Configration - Global"></vs-list-header>
@@ -106,29 +108,27 @@
                 </vs-list>
             </div>
         </vs-col>
-    </vs-row vs-h="4">
+    </vs-row>
+
+    <vs-row vs-h="4">
       <vs-col vs-type="flex" vs-justify="left" vs-align="top" vs-w="12">
-        <div id='thumbnail'>
-          <vs-card>
+        <div id='thumbnail' style='overflow-x: auto; max-height:300px'>
+          <vs-card :key="index" v-for="_chart in chartStore" style="display:inline; float:left; margin:10px">
           <div slot="header">
-       
             <vs-chip>
               <vs-avatar text="LD"/>
-              Chart I
-            </vs-chip>
-            
+              {{_chart.name}}
+             </vs-chip>
           </div>
-        
-          <h4> Source: sample </h4> 
-          <h4> Dim: x: a, y: b </h4> 
-        
-          <div id='imgContainer' style="margin-top:20px"></div>
-  
+          <h4> Source: {{_chart.source}} </h4> 
+          <h4> Dim: x: {{_chart.dimx}}, y: {{_chart.dimy}} </h4> 
+          <div style="margin-top:20px">
+              <img :src="_chart.imgData" width="170">
+          </div>
         </vs-card>
         </div>
       </vs-col>
-    <vs-row>
-
+  
     </vs-row>
 
 </div>
@@ -141,7 +141,6 @@ import config from '../assets/config.json'
 import sample_data from '../assets/data-sample.json'
 import $ from "jquery";
 import * as fs from 'browserify-fs';
-import canvasToImage from 'canvas-to-image';
 
 let global_data = sample_data
 
@@ -164,6 +163,11 @@ export default {
         typesPrefab: config.typesPrefab,
         encoding:{'x':{},'y':{}},
         size:10,
+        chartStore:[
+          { name:'Chart I', dimx:'a', dimy:'b', imgDara:'123', source:'sampleData'},
+        
+        ],
+        globalchartIndex:0
 
     }
   },
@@ -175,24 +179,9 @@ export default {
 
         let myCanvas = document.getElementById("myCanvas");
 
-        let image = new Image()
-
         let source = myCanvas.toDataURL("image/png");
 
-        image.src = source
-        image.width = 170
-     
-        document.getElementById("imgContainer").appendChild(image);
-
-        //var data = source.replace(/^data:image\/\w+;base64,/, "");
-
-        //var buf = new Buffer(data, 'base64');
-
-        //fs.writeFile('./test.jpg', buf)
-
-        console.log(image)
-
-	      return image;
+        this.chartStore[this.globalchartIndex].imgData = source;
 
       },
 
@@ -224,7 +213,7 @@ export default {
 
         this.fields = this.fieldsExtraction(global_data.dimensions)
 
-        this.chartResize($('#app').width() * 0.5, $('body').height() * 0.8)
+        this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5)
 
         this.saveCanvas2Local('#preview')
       },
@@ -236,6 +225,8 @@ export default {
           }
 
         vegaEmbed(container,this.data);
+
+        this.saveCanvas2Local('#preview')
       },
       chartEncodingUpdate(container, props){
 
@@ -245,6 +236,8 @@ export default {
           }
 
         vegaEmbed(container,this.data);
+
+        this.saveCanvas2Local('#preview')
       },
       chartResize(innerWidth, innerHeight){
 
@@ -254,6 +247,14 @@ export default {
         this.data['height'] = height
 
         vegaEmbed("#preview", this.data);
+      },
+      addChart(){
+
+        let test_data = { name:'Chart I', dimx:'a', dimy:'b', imgDara:null, source:'sampleData'};
+
+        this.chartStore.push(test_data)
+
+        this.globalchartIndex += 1
       }
 
   },
@@ -312,74 +313,15 @@ export default {
 
       window.addEventListener('resize', () => {
 
-        console.log($('#preview').width())
-
-        this.chartResize($('#app').width() * 0.5, $('body').height() * 0.8)
+        this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5)
       });
 
   },
 }
 </script>
 
-<style lang="stylus">
+<style lang="stylus" scoped>
 
-#online-editor
-  width: 100%;
-
-.header-sidebar
-  display flex
-  align-items center
-  justify-content center
-  flex-direction column
-  width 100%
-  h4
-    display flex
-    align-items center
-    justify-content center
-    width 100%
-    > button
-      margin-left 10px
-      
-.footer-sidebar
-  display flex
-  align-items center
-  justify-content space-between
-  width 100%
-  > button
-      border 0px solid rgba(0,0,0,0) !important
-      border-left 1px solid rgba(0,0,0,.07) !important
-      border-radius 0px !important
-
-.vs-sidebar--background{
-
-  background: none !important;
-}
-
-#preview
-  padding-top:50px
-
-#editor
-  border-left 1px solid black
-  padding-top:50px
-
-#data_list
-  border-right 1px solid black
-  padding-top:50px
-
-.con-vs-slider
-  min-width:150px
-
-.con-vs-card
-  width:200px;
-
-#thumbnail
-  padding:30px;
-
-.con-vs-chip
-  float:none;
-
-#data_list
-  padding:30px
-  min-width:300px
+@import "./Styles/editor"
 
 </style>
