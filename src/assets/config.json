@@ -2,9 +2,13 @@
     "chartType":[
 
         {"text": "Barchart", "value": "bar"},
+        {"text": "Areachart", "value": "area"},
         {"text": "Linechart", "value": "line"},
         {"text": "ScatterPlot", "value": "point"},
-        {"text": "Bubble", "value": "circle"}
+        {"text": "Rectangle", "value": "rect"},
+        {"text": "Square", "value": "square"},
+        {"text": "Label", "value": "text"},
+        {"text": "Tick", "value": "tick"}
     ],
 
     "typesPrefab": [

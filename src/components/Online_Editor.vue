@@ -21,58 +21,38 @@
         <a href="#">Update</a>
       </vs-navbar-item>
     </vs-navbar>
-
-     <vs-button @click="active=!active" color="primary" type="filled" style="float:left">></vs-button>
-    <vs-sidebar parent="body" default-index="1"  color="primary" class="sidebarx" spacer v-model="active">
-
-      <div class="header-sidebar" slot="header">
-        <vs-avatar  size="70px" src="https://randomuser.me/api/portraits/men/85.jpg"/>
-
-        <h4>
-          My Name
-          <vs-button color="primary" icon="more_horiz" type="flat"></vs-button>
-        </h4>
-
-      </div>
-
-      <vs-sidebar-item index="1" icon="question_answer">
-        Dashboard
-      </vs-sidebar-item>
-
-      <vs-sidebar-item index="2" icon="gavel">
-        History
-      </vs-sidebar-item>
-
-      <vs-divider icon="person" position="left">
-        User
-      </vs-divider>
-
-      <vs-sidebar-item index="3" icon="verified_user">
-        Configurations
-      </vs-sidebar-item>
-      <vs-sidebar-item index="4" icon="account_box">
-        Perfile
-      </vs-sidebar-item>
-      <vs-sidebar-item index="5" >
-        Card
-      </vs-sidebar-item>
-
-      <div class="footer-sidebar" slot="footer">
-        <vs-button icon="reply" color="danger" type="flat">log out</vs-button>
-        <vs-button icon="settings" color="primary" type="border"></vs-button>
-      </div>
-
-     
-    </vs-sidebar>
-
   
     <vs-row>
+
+        <vs-col vs-type="flex" vs-justify="left" vs-align="top" vs-w="2">
+             <div id='data_list'>
+
+              <vs-list>
+                <vs-list-header title="Sample Data" color="dark"></vs-list-header>
+                <vs-list-item title="A" subtitle="Ordinal">
+                  <template vs-text="O">
+                    <vs-avatar />
+                  </template>
+                </vs-list-item>
+                <vs-list-item title="B" subtitle="Numerical">
+                  <template vs-text="N">
+                    <vs-avatar />
+                  </template>
+                </vs-list-item>
+          
+              </vs-list>
+
+             </div>
+        </vs-col>
+
         <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="8">
              <div id='preview'></div>
-
         </vs-col>
-        <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="4">
+
+        <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="2">
             <div id='editor'>
+
+                <vs-button color="dark" type="filled">Add a layer</vs-button>
 
                 <vs-list>
                     <vs-list-header class="dark" icon="settings" title="Configration - Global"></vs-list-header>
@@ -119,28 +99,36 @@
                     </vs-list-item>
 
                     <vs-list-header class="dark" icon="settings" title="Configration - Style"></vs-list-header>
-                    <vs-list-item title="X" subtitle="Dim">
-
-                      <vs-select v-model="dimensions['x']">
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in fields" />
-                      </vs-select>
-                      <vs-select v-model="types['x']" >
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in typesPrefab" />
-                      </vs-select>
-      
-                    </vs-list-item>
-                     <vs-list-item title="Y" subtitle="Dim">
-                      <vs-select v-model="dimensions['y']" >
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in fields" />
-                      </vs-select>
-                      <vs-select v-model="types['y']">
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in typesPrefab" />
-                      </vs-select>
+                    <vs-list-item title="Makersize">
+                      <vs-slider v-model="size" max='20' width='50'/>
                     </vs-list-item>
                     
                 </vs-list>
             </div>
         </vs-col>
+    </vs-row vs-h="4">
+      <vs-col vs-type="flex" vs-justify="left" vs-align="top" vs-w="12">
+        <div id='thumbnail'>
+          <vs-card>
+          <div slot="header">
+       
+            <vs-chip>
+              <vs-avatar text="LD"/>
+              Chart I
+            </vs-chip>
+            
+          </div>
+        
+          <h4> Source: sample </h4> 
+          <h4> Dim: x: a, y: b </h4> 
+        
+          <div id='imgContainer' style="margin-top:20px"></div>
+  
+        </vs-card>
+        </div>
+      </vs-col>
+    <vs-row>
+
     </vs-row>
 
 </div>
@@ -152,6 +140,8 @@ import vegaEmbed from 'vega-embed';
 import config from '../assets/config.json'
 import sample_data from '../assets/data-sample.json'
 import $ from "jquery";
+import * as fs from 'browserify-fs';
+import canvasToImage from 'canvas-to-image';
 
 let global_data = sample_data
 
@@ -173,10 +163,38 @@ export default {
         types: {'x':'ordinal','y':'quantitative'},
         typesPrefab: config.typesPrefab,
         encoding:{'x':{},'y':{}},
+        size:10,
 
     }
   },
   methods:{
+
+      saveCanvas2Local(canvasContainer){
+
+        $(canvasContainer + ' canvas').attr('id','myCanvas')
+
+        let myCanvas = document.getElementById("myCanvas");
+
+        let image = new Image()
+
+        let source = myCanvas.toDataURL("image/png");
+
+        image.src = source
+        image.width = 170
+     
+        document.getElementById("imgContainer").appendChild(image);
+
+        //var data = source.replace(/^data:image\/\w+;base64,/, "");
+
+        //var buf = new Buffer(data, 'base64');
+
+        //fs.writeFile('./test.jpg', buf)
+
+        console.log(image)
+
+	      return image;
+
+      },
 
       updateProp(prop, value){
 
@@ -207,6 +225,8 @@ export default {
         this.fields = this.fieldsExtraction(global_data.dimensions)
 
         this.chartResize($('#app').width() * 0.5, $('body').height() * 0.8)
+
+        this.saveCanvas2Local('#preview')
       },
       chartUpdate(container, props){
 
@@ -229,11 +249,8 @@ export default {
       chartResize(innerWidth, innerHeight){
 
         let height = innerHeight > innerWidth * 2 ? innerWidth * 2 : innerHeight;
-
         let width = innerWidth;
-
         this.data['width'] = width
-        
         this.data['height'] = height
 
         vegaEmbed("#preview", this.data);
@@ -338,5 +355,31 @@ export default {
   background: none !important;
 }
 
+#preview
+  padding-top:50px
+
+#editor
+  border-left 1px solid black
+  padding-top:50px
+
+#data_list
+  border-right 1px solid black
+  padding-top:50px
+
+.con-vs-slider
+  min-width:150px
+
+.con-vs-card
+  width:200px;
+
+#thumbnail
+  padding:30px;
+
+.con-vs-chip
+  float:none;
+
+#data_list
+  padding:30px
+  min-width:300px
 
 </style>
