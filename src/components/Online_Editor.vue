@@ -22,7 +22,7 @@
       </vs-navbar-item>
     </vs-navbar>
 
-     <vs-button @click="active=!active" color="primary" type="filled" style="float:left">Open Sidebar</vs-button>
+     <vs-button @click="active=!active" color="primary" type="filled" style="float:left">></vs-button>
     <vs-sidebar parent="body" default-index="1"  color="primary" class="sidebarx" spacer v-model="active">
 
       <div class="header-sidebar" slot="header">
@@ -67,15 +67,15 @@
 
   
     <vs-row>
-        <vs-col vs-type="flex" vs-justify="center" vs-align="center" vs-w="8">
+        <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="8">
              <div id='preview'></div>
 
         </vs-col>
-        <vs-col vs-type="flex" vs-justify="center" vs-align="center" vs-w="4">
+        <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="4">
             <div id='editor'>
 
                 <vs-list>
-                    <vs-list-header class="dark" icon="settings" title="Configration - Style"></vs-list-header>
+                    <vs-list-header class="dark" icon="settings" title="Configration - Global"></vs-list-header>
                     <vs-list-item icon="create">
 
                          <vs-select
@@ -101,14 +101,33 @@
                     <vs-list-header class="dark" icon="settings" title="Configration - Encoding"></vs-list-header>
                     <vs-list-item title="X" subtitle="Dim">
 
-                      <span>
                       <vs-select v-model="dimensions['x']">
                         <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in fields" />
                       </vs-select>
                       <vs-select v-model="types['x']" >
                         <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in typesPrefab" />
                       </vs-select>
-                      </span>
+      
+                    </vs-list-item>
+                     <vs-list-item title="Y" subtitle="Dim">
+                      <vs-select v-model="dimensions['y']" >
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in fields" />
+                      </vs-select>
+                      <vs-select v-model="types['y']">
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in typesPrefab" />
+                      </vs-select>
+                    </vs-list-item>
+
+                    <vs-list-header class="dark" icon="settings" title="Configration - Style"></vs-list-header>
+                    <vs-list-item title="X" subtitle="Dim">
+
+                      <vs-select v-model="dimensions['x']">
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in fields" />
+                      </vs-select>
+                      <vs-select v-model="types['x']" >
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in typesPrefab" />
+                      </vs-select>
+      
                     </vs-list-item>
                      <vs-list-item title="Y" subtitle="Dim">
                       <vs-select v-model="dimensions['y']" >
@@ -124,35 +143,17 @@
         </vs-col>
     </vs-row>
 
-  
-  
 </div>
 
 </template>
 <script>
 
 import vegaEmbed from 'vega-embed';
+import config from '../assets/config.json'
+import sample_data from '../assets/data-sample.json'
 import $ from "jquery";
 
-let global_data = {
-    "width": 120,
-    "height": 120,
-      "dimensions": ['a', 'b'],
-      "description": "A simple bar chart with embedded data.",
-      "data": {
-        "values": [
-          {"a": "A","b": 28}, {"a": "B","b": 55}, {"a": "C","b": 43},
-          {"a": "D","b": 91}, {"a": "E","b": 81}, {"a": "F","b": 53},
-          {"a": "G","b": 19}, {"a": "H","b": 87}, {"a": "I","b": 52}
-        ]
-      },
-      "mark": "bar",
-      "encoding": {
-        "x": {"field": "a", "type": "ordinal"},
-        "y": {"field": "b", "type": "quantitative"},
-        "color": {"value": "#666"}
-      },
-    }
+let global_data = sample_data
 
 export default {
   name:'online-editor',
@@ -160,25 +161,17 @@ export default {
     return {
         data: global_data,
         active:false,
-        options3:[
-          {text: 'Barchart', value: 'bar'},
-          {text: 'Linechart', value: 'line'},
-          {text: 'ScatterPlot', value: 'point'},
-          {text: 'Bubble', value: 'circle'},
-        ],
+        options3: config.chartType,
         select3:'bar',
         fillColor:'#664433',
         colorOptions:[
           {text: 'Black', value: '#333333'},
           {text: 'Red', value: '#993333'},
         ],
-        fields:this.fieldsExtraction(global_data.dimensions),
-        dimensions: {'x':'none','y':'none'},
-        types: {'x':'none','y':'none'},
-        typesPrefab: [
-          {'text':'Quantitative','value':'quantitative'},
-          {'text':'Ordinal','value':'ordinal'}
-        ],
+        fields:{},
+        dimensions: {'x':'a','y':'b'},
+        types: {'x':'ordinal','y':'quantitative'},
+        typesPrefab: config.typesPrefab,
         encoding:{'x':{},'y':{}},
 
     }
@@ -199,21 +192,21 @@ export default {
        
         rets.push(meta_x, meta_y)
 
-        console.log(rets)
-
         return rets;
 
       },
       chartInit(container, props){
 
-          for (let key in props){
+        for (let key in props){
 
-              this.data[key] = props[key]
-          }
+            this.data[key] = props[key]
+        }
 
         vegaEmbed(container,this.data);
 
-        this.chartResize($('#preview').width(), $('body').height() * 0.8)
+        this.fields = this.fieldsExtraction(global_data.dimensions)
+
+        this.chartResize($('#app').width() * 0.5, $('body').height() * 0.8)
       },
       chartUpdate(container, props){
 
@@ -225,8 +218,6 @@ export default {
         vegaEmbed(container,this.data);
       },
       chartEncodingUpdate(container, props){
-
-          console.log(props)
 
           for (let key in props){
 
@@ -252,8 +243,6 @@ export default {
   watch:{
 
     select3(curVal, oldVal){
-
-      console.log(curVal, oldVal)
 
       if(curVal != oldVal){
 
@@ -306,7 +295,9 @@ export default {
 
       window.addEventListener('resize', () => {
 
-        this.chartResize($('#preview').width(), $('body').height() * 0.8)
+        console.log($('#preview').width())
+
+        this.chartResize($('#app').width() * 0.5, $('body').height() * 0.8)
       });
 
   },
