@@ -26,22 +26,16 @@
 
         <vs-col vs-type="flex" vs-justify="left" vs-align="top" vs-w="2">
              <div id='data_list'>
-
-              <vs-list>
-                <vs-list-header title="Sample Data" color="dark"></vs-list-header>
-                <vs-list-item title="A" subtitle="Ordinal">
-                  <template>
-                    <vs-avatar text="O"/>
-                  </template>
-                </vs-list-item>
-                <vs-list-item title="B" subtitle="Numerical">
-                  <template>
-                    <vs-avatar text="N"/>
-                  </template>
-                </vs-list-item>
-          
+              <vs-list :key="index" v-for="data in dataList">
+                <vs-list-header :title="data.name" color="dark"></vs-list-header>
+                  <div v-for="dim in data.dimensions">
+                    <vs-list-item :key="index" :title="dim.name" :subtitle="dim.type">
+                      <template>
+                        <vs-avatar text="O"/>
+                      </template>
+                    </vs-list-item>
+                  </div>
               </vs-list>
-
              </div>
         </vs-col>
 
@@ -141,6 +135,7 @@ import config from '../assets/config.json'
 import sample_data from '../assets/data-sample.json'
 import $ from "jquery";
 import * as fs from 'browserify-fs';
+import dataHelper from '../Helper/dataHelper';
 
 let global_data = sample_data
 
@@ -167,7 +162,8 @@ export default {
           { name:'Chart I', dimx:'a', dimy:'b', imgDara:'123', source:'sampleData'},
         
         ],
-        globalchartIndex:0
+        globalchartIndex:0,
+        dataList:[],
 
     }
   },
@@ -312,8 +308,12 @@ export default {
       this.chartInit("#preview");
 
       window.addEventListener('resize', () => {
-
         this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5)
+      });
+
+      dataHelper.getDataList().then(response => {
+        this.dataList = response.data;
+        console.log(this.dataList)
       });
 
   },

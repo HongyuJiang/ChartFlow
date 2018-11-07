@@ -1,13 +1,16 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
-import BootstrapVue from 'bootstrap-vue'
 import App from './App'
 import Vuesax from 'vuesax'
-
+import VueRouter from 'vue-router'
 import 'vuesax/dist/vuesax.css' //Vuesax styles
 import 'material-icons/iconfont/material-icons.css';
 
+import OnlineEditor from './components/Online_Editor'
+import Entrance from './components/Entrance'
+
+Vue.use(VueRouter)
 Vue.use(Vuesax, {
   theme:{
     colors:{
@@ -19,11 +22,24 @@ Vue.use(Vuesax, {
     }
   }
 })
+
+const routes = [
+	{ path: '/', redirect: '/home' },
+  { path: '/home', name: 'home', component: Entrance},
+  { path: '/editor', name: 'editor', component: OnlineEditor}
+]
+
+const router = new VueRouter({
+  routes
+})
+
+
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
 new Vue({
-  el: '#app',
+  el: '#app', 
+  router,
   components: { App },
   template: '<App/>'
-})
+}).$mount('#app')

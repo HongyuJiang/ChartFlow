@@ -1,17 +1,14 @@
 <template>
   <div id="app">
-    <OnlineEditor/>
+   <router-view></router-view>
   </div>
 </template>
 
 <script>
-import OnlineEditor from './components/Online_Editor'
 
 export default {
   name: 'App',
-  components: {
-    OnlineEditor
-  }
+  
 }
 </script>
 
