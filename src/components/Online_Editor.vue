@@ -26,12 +26,17 @@
 
         <vs-col id='data_list_container' vs-type="flex" vs-justify="left" vs-align="top" vs-w="2" style="max-height:700px;overflow-y:scroll">
              <div id='data_list'>
-              <vs-list :key="index" v-for="data in dataList">
-                
-                  <vs-checkbox vs-justify="left">{{data.name}}</vs-checkbox>
+              <vs-list :key="index" v-for="(data, index) in dataList">
+              
+              
+                  <vs-button v-if="index != indexOfSelectedData" color="dark" type="line" :key="data.index" v-on:click="dataSelected(index)" icon="menu">{{data.name}}</vs-button>
+              
+                  <vs-button v-if="index === indexOfSelectedData" color="dark" type="filled" :key="data.index" v-on:click="dataSelected(index)" icon="menu">{{data.name}}</vs-button>
+
+                  <vs-divider></vs-divider>
             
-                  <div v-for="dim in data.dimensions">
-                    <vs-list-item :key="index" :title="dim.name" :subtitle="dim.type">
+                  <div :key="index" v-for="(dim, index) in data.dimensions">
+                    <vs-list-item :title="dim.name" :subtitle="dim.type">
                       <template>
                         <vs-avatar v-if="dim.type == 'ordinal'" text="O"/>
                         <vs-avatar v-if="dim.type == 'quantitative'" text="Q"/>
@@ -65,7 +70,7 @@
                           v-model="select3"
                           icon="arrow_downward"
                           >
-                          <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in options3" />
+                          <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="(item,index) in options3" />
                         </vs-select>
 
 
@@ -83,19 +88,19 @@
                     <vs-list-item title="X" subtitle="Dim">
 
                       <vs-select v-model="dimensions['x']">
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in fields" />
+                        <vs-select-item :key="index" :value="item.name" :text="item.name" v-for="(item,index) in fields" />
                       </vs-select>
                       <vs-select v-model="types['x']" >
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in typesPrefab" />
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="(item,index) in typesPrefab" />
                       </vs-select>
       
                     </vs-list-item>
                      <vs-list-item title="Y" subtitle="Dim">
                       <vs-select v-model="dimensions['y']" >
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in fields" />
+                        <vs-select-item :key="index" :value="item.name" :text="item.name" v-for="(item,index) in fields" />
                       </vs-select>
                       <vs-select v-model="types['y']">
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in typesPrefab" />
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="(item,index) in typesPrefab" />
                       </vs-select>
                     </vs-list-item>
 
@@ -115,7 +120,7 @@
     <vs-row vs-h="4">
       <vs-col vs-type="flex" vs-justify="left" vs-align="top" vs-w="12">
         <div id='thumbnail' style='overflow-x: auto; max-height:300px'>
-          <vs-card :key="index" v-for="_chart in chartStore" style="display:inline; float:left; margin:10px">
+          <vs-card :key="index" v-for="(_chart, index) in chartStore" style="display:inline; float:left; margin:10px">
             <div v-on:mouseover="card_mouse_over" class='card_container'>
               <div slot="header">
                 <vs-chip>
@@ -162,7 +167,7 @@ export default {
           {text: 'Black', value: '#333333'},
           {text: 'Red', value: '#993333'},
         ],
-        fields:{},
+        fields: global_data.dimensions,
         dimensions: {'x':'a','y':'b'},
         types: {'x':'ordinal','y':'quantitative'},
         typesPrefab: config.typesPrefab,
@@ -175,6 +180,7 @@ export default {
         globalchartIndex:0,
         dataList:[],
         number:10,
+        indexOfSelectedData: 0,
 
     }
   },
@@ -218,7 +224,7 @@ export default {
 
         vegaEmbed(container,this.data);
 
-        this.fields = this.fieldsExtraction(global_data.dimensions)
+        //this.fields = this.fieldsExtraction(global_data.dimensions)
 
         this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5)
 
@@ -237,12 +243,16 @@ export default {
       },
       chartEncodingUpdate(container, props){
 
-          for (let key in props){
+        if(this.data['encoding'] == undefined)
+          this.data['encoding'] = {}
 
-              this.data['encoding'][key] = props[key]
-          }
+        for (let key in props){
+          this.data['encoding'][key] = props[key]
+        }
 
         vegaEmbed(container,this.data);
+
+        console.log(this.data)
 
         this.saveCanvas2Local('#preview')
       },
@@ -265,9 +275,25 @@ export default {
       },
       card_mouse_over(event){
 
-        console.log($(event.target))
-
         $(event.target).addClass('active')
+
+      },
+      dataSelected(index){
+
+        if(this.indexOfSelectedData != index){
+
+          this.indexOfSelectedData = index
+
+          dataHelper.getDataDetail(this.dataList[index].name).then(response => {
+
+             this.data = response.data;
+             this.fields = this.data.dimensions
+             this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5)
+             
+          });
+
+        }
+
       },
 
   },
@@ -289,15 +315,14 @@ export default {
     },
     dimensions: {
       handler: function(newVal){
-          this.encoding.x['field'] = newVal.x
-          if(this.encoding.x['type'] != undefined && this.encoding.x['field'] != undefined){
 
+          this.encoding.x['field'] = newVal.x
+          this.encoding.y['field'] = newVal.y
+
+          if(this.encoding.x['type'] != undefined && this.encoding.x['field'] != undefined){
              this.chartEncodingUpdate('#preview', this.encoding)
           }
-    
-          this.encoding.y['field'] = newVal.y
           if(this.encoding.y['type'] != undefined && this.encoding.y['field'] != undefined){
-             
              this.chartEncodingUpdate('#preview', this.encoding)
           }
       
@@ -306,14 +331,14 @@ export default {
     },
     types: {
       handler: function(newVal){
+
           this.encoding.x['type'] = newVal.x
+          this.encoding.y['type'] = newVal.y
+
           if(this.encoding.x['type'] != undefined && this.encoding.x['field'] != undefined){
              this.chartEncodingUpdate('#preview', this.encoding)
           }
-
-          this.encoding.y['type'] = newVal.y
           if(this.encoding.y['type'] != undefined && this.encoding.y['field'] != undefined){
-             
              this.chartEncodingUpdate('#preview', this.encoding)
           }
       },

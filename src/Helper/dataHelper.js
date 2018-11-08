@@ -7,7 +7,7 @@ export default class dataHelper {
     }
     static getDataDetail(dataname) {
 
-        return axios.get('http://localhost:3000/api/getInitData?dataName=' + dataname);
+        return axios.post('http://localhost:3000/api/getData?dataname=' + dataname);
     }
   
 }

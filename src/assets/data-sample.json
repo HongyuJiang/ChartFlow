@@ -1,5 +1,5 @@
 {
-      "dimensions": ["a", "b"],
+      "dimensions": [{"name": "a"}, {"name": "b"}],
       "title": {
         "text": "A Simple Bar Chart",
         "anchor": "middle",
