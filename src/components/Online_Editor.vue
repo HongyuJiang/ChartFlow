@@ -24,14 +24,19 @@
   
      <vs-row vs-h="8">
 
-        <vs-col vs-type="flex" vs-justify="left" vs-align="top" vs-w="2">
+        <vs-col id='data_list_container' vs-type="flex" vs-justify="left" vs-align="top" vs-w="2" style="max-height:700px;overflow-y:scroll">
              <div id='data_list'>
               <vs-list :key="index" v-for="data in dataList">
-                <vs-list-header :title="data.name" color="dark"></vs-list-header>
+                
+                  <vs-checkbox vs-justify="left">{{data.name}}</vs-checkbox>
+            
                   <div v-for="dim in data.dimensions">
                     <vs-list-item :key="index" :title="dim.name" :subtitle="dim.type">
                       <template>
-                        <vs-avatar text="O"/>
+                        <vs-avatar v-if="dim.type == 'ordinal'" text="O"/>
+                        <vs-avatar v-if="dim.type == 'quantitative'" text="Q"/>
+                        <vs-avatar v-if="dim.type == 'nominal'" text="N"/>
+                        <vs-avatar v-if="dim.type == 'temporal'" text="T"/>
                       </template>
                     </vs-list-item>
                   </div>
@@ -95,8 +100,11 @@
                     </vs-list-item>
 
                     <vs-list-header class="dark" icon="settings" title="Configration - Style"></vs-list-header>
-                    <vs-list-item title="Makersize">
+                    <vs-list-item title="Markersize">
                       <vs-slider v-model="size" max='20' width='50'/>
+                    </vs-list-item>
+                    <vs-list-item title="Markernumber">
+                      <vs-input-number v-model="number"/>
                     </vs-list-item>
                     
                 </vs-list>
@@ -108,17 +116,19 @@
       <vs-col vs-type="flex" vs-justify="left" vs-align="top" vs-w="12">
         <div id='thumbnail' style='overflow-x: auto; max-height:300px'>
           <vs-card :key="index" v-for="_chart in chartStore" style="display:inline; float:left; margin:10px">
-          <div slot="header">
-            <vs-chip>
-              <vs-avatar text="LD"/>
-              {{_chart.name}}
-             </vs-chip>
-          </div>
-          <h4> Source: {{_chart.source}} </h4> 
-          <h4> Dim: x: {{_chart.dimx}}, y: {{_chart.dimy}} </h4> 
-          <div style="margin-top:20px">
-              <img :src="_chart.imgData" width="170">
-          </div>
+            <div v-on:mouseover="card_mouse_over" class='card_container'>
+              <div slot="header">
+                <vs-chip>
+                  <vs-avatar text="LD"/>
+                  {{_chart.name}}
+                </vs-chip>
+              </div>
+              <h4> Source: {{_chart.source}} </h4> 
+              <h4> Dim: x: {{_chart.dimx}}, y: {{_chart.dimy}} </h4> 
+              <div style="margin-top:20px">
+                  <img :src="_chart.imgData" width="170">
+              </div>
+            </div>
         </vs-card>
         </div>
       </vs-col>
@@ -164,6 +174,7 @@ export default {
         ],
         globalchartIndex:0,
         dataList:[],
+        number:10,
 
     }
   },
@@ -251,7 +262,13 @@ export default {
         this.chartStore.push(test_data)
 
         this.globalchartIndex += 1
-      }
+      },
+      card_mouse_over(event){
+
+        console.log($(event.target))
+
+        $(event.target).addClass('active')
+      },
 
   },
   watch:{
@@ -313,7 +330,6 @@ export default {
 
       dataHelper.getDataList().then(response => {
         this.dataList = response.data;
-        console.log(this.dataList)
       });
 
   },

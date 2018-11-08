@@ -13,6 +13,8 @@
 
     "typesPrefab": [
         {"text":"Quantitative","value":"quantitative"},
-        {"text":"Ordinal","value":"ordinal"}
+        {"text":"Ordinal","value":"ordinal"},
+        {"text":"Temporal","value":"temporal"},
+        {"text":"Nominal","value":"nominal"}
     ]
 }
