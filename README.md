@@ -2,4 +2,4 @@
 
 ## A visualization building tool base on Vega-lite
 
-![](preview.gif)
+![](preview.png)
