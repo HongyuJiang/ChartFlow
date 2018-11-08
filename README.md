@@ -1,3 +1,5 @@
 # openvis_swust
 
-![](silly-pig.gif)
+## A visualization building tool base on Vega-lite
+
+![](preview.gif)
