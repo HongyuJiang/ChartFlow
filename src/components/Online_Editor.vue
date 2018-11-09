@@ -144,225 +144,211 @@
 
 </template>
 <script>
-
-import vegaEmbed from 'vega-embed';
-import config from '../assets/config.json'
-import sample_data from '../assets/data-sample.json'
+import vegaEmbed from "vega-embed";
+import config from "../assets/config.json";
+import sample_data from "../assets/data-sample.json";
 import $ from "jquery";
-import * as fs from 'browserify-fs';
-import dataHelper from '../Helper/dataHelper';
+import * as fs from "browserify-fs";
+import dataHelper from "../Helper/dataHelper";
 
-let global_data = sample_data
+let global_data = sample_data;
 
 export default {
-  name:'online-editor',
-  data () {
+  name: "online-editor",
+  data() {
     return {
-        data: global_data,
-        active:false,
-        options3: config.chartType,
-        select3:'bar',
-        fillColor:'#664433',
-        colorOptions:[
-          {text: 'Black', value: '#333333'},
-          {text: 'Red', value: '#993333'},
-        ],
-        fields: global_data.dimensions,
-        dimensions: {'x':'a','y':'b'},
-        types: {'x':'ordinal','y':'quantitative'},
-        typesPrefab: config.typesPrefab,
-        encoding:{'x':{},'y':{}},
-        size:10,
-        chartStore:[
-          { name:'Chart I', dimx:'a', dimy:'b', imgDara:'123', source:'sampleData'},
-        
-        ],
-        globalchartIndex:0,
-        dataList:[],
-        number:10,
-        indexOfSelectedData: 0,
+      data: global_data,
+      active: false,
+      options3: config.chartType,
+      select3: "bar",
+      fillColor: "#664433",
+      colorOptions: [
+        { text: "Black", value: "#333333" },
+        { text: "Red", value: "#993333" }
+      ],
+      fields: global_data.dimensions,
+      dimensions: { x: "a", y: "b" },
+      types: { x: "ordinal", y: "quantitative" },
+      typesPrefab: config.typesPrefab,
+      encoding: { x: {}, y: {} },
+      size: 10,
+      chartStore: [
+        {
+          name: "Chart I",
+          dimx: "a",
+          dimy: "b",
+          imgDara: "123",
+          source: "sampleData"
+        }
+      ],
+      globalchartIndex: 0,
+      dataList: [],
+      number: 10,
+      indexOfSelectedData: 0
+    };
+  },
+  methods: {
+    saveCanvas2Local(canvasContainer) {
+      $(canvasContainer + " canvas").attr("id", "myCanvas");
 
+      let myCanvas = document.getElementById("myCanvas");
+
+      let source = myCanvas.toDataURL("image/png");
+
+      this.chartStore[this.globalchartIndex].imgData = source;
+    },
+
+    updateProp(prop, value) {
+      this.data[prop] = value;
+      vegaEmbed("#preview", this.data);
+    },
+    fieldsExtraction(dimensions) {
+      let rets = [];
+
+      let meta_x = { text: dimensions[0], value: dimensions[0] };
+      let meta_y = { text: dimensions[1], value: dimensions[1] };
+
+      rets.push(meta_x, meta_y);
+
+      return rets;
+    },
+    chartInit(container, props) {
+      for (let key in props) {
+        this.data[key] = props[key];
+      }
+
+      vegaEmbed(container, this.data);
+
+      //this.fields = this.fieldsExtraction(global_data.dimensions)
+
+      this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5);
+
+      this.saveCanvas2Local("#preview");
+    },
+    chartUpdate(container, props) {
+      for (let key in props) {
+        this.data[key] = props[key];
+      }
+
+      vegaEmbed(container, this.data);
+
+      this.saveCanvas2Local("#preview");
+    },
+    chartEncodingUpdate(container, props) {
+      if (this.data["encoding"] == undefined) this.data["encoding"] = {};
+
+      for (let key in props) {
+        this.data["encoding"][key] = props[key];
+      }
+
+      vegaEmbed(container, this.data);
+
+      console.log(this.data);
+
+      this.saveCanvas2Local("#preview");
+    },
+    chartResize(innerWidth, innerHeight) {
+      let height = innerHeight > innerWidth * 2 ? innerWidth * 2 : innerHeight;
+      let width = innerWidth;
+      this.data["width"] = width;
+      this.data["height"] = height;
+
+      vegaEmbed("#preview", this.data);
+    },
+    addChart() {
+      let test_data = {
+        name: "Chart I",
+        dimx: "a",
+        dimy: "b",
+        imgDara: null,
+        source: "sampleData"
+      };
+
+      this.chartStore.push(test_data);
+
+      this.globalchartIndex += 1;
+    },
+    card_mouse_over(event) {
+      $(event.target).addClass("active");
+    },
+    dataSelected(index) {
+      if (this.indexOfSelectedData != index) {
+        this.indexOfSelectedData = index;
+
+        dataHelper.getDataDetail(this.dataList[index].name).then(response => {
+          this.data = response.data;
+          this.fields = this.data.dimensions;
+          this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5);
+        });
+      }
     }
   },
-  methods:{
-
-      saveCanvas2Local(canvasContainer){
-
-        $(canvasContainer + ' canvas').attr('id','myCanvas')
-
-        let myCanvas = document.getElementById("myCanvas");
-
-        let source = myCanvas.toDataURL("image/png");
-
-        this.chartStore[this.globalchartIndex].imgData = source;
-
-      },
-
-      updateProp(prop, value){
-
-          this.data[prop] = value
-          vegaEmbed("#preview", this.data);
-      },
-      fieldsExtraction(dimensions){
-
-        let rets = []
-
-        let meta_x = {'text': dimensions[0], 'value': dimensions[0]}
-        let meta_y = {'text': dimensions[1], 'value': dimensions[1]}
-       
-        rets.push(meta_x, meta_y)
-
-        return rets;
-
-      },
-      chartInit(container, props){
-
-        for (let key in props){
-
-            this.data[key] = props[key]
-        }
-
-        vegaEmbed(container,this.data);
-
-        //this.fields = this.fieldsExtraction(global_data.dimensions)
-
-        this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5)
-
-        this.saveCanvas2Local('#preview')
-      },
-      chartUpdate(container, props){
-
-          for (let key in props){
-
-              this.data[key] = props[key]
-          }
-
-        vegaEmbed(container,this.data);
-
-        this.saveCanvas2Local('#preview')
-      },
-      chartEncodingUpdate(container, props){
-
-        if(this.data['encoding'] == undefined)
-          this.data['encoding'] = {}
-
-        for (let key in props){
-          this.data['encoding'][key] = props[key]
-        }
-
-        vegaEmbed(container,this.data);
-
-        console.log(this.data)
-
-        this.saveCanvas2Local('#preview')
-      },
-      chartResize(innerWidth, innerHeight){
-
-        let height = innerHeight > innerWidth * 2 ? innerWidth * 2 : innerHeight;
-        let width = innerWidth;
-        this.data['width'] = width
-        this.data['height'] = height
-
-        vegaEmbed("#preview", this.data);
-      },
-      addChart(){
-
-        let test_data = { name:'Chart I', dimx:'a', dimy:'b', imgDara:null, source:'sampleData'};
-
-        this.chartStore.push(test_data)
-
-        this.globalchartIndex += 1
-      },
-      card_mouse_over(event){
-
-        $(event.target).addClass('active')
-
-      },
-      dataSelected(index){
-
-        if(this.indexOfSelectedData != index){
-
-          this.indexOfSelectedData = index
-
-          dataHelper.getDataDetail(this.dataList[index].name).then(response => {
-
-             this.data = response.data;
-             this.fields = this.data.dimensions
-             this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5)
-             
-          });
-
-        }
-
-      },
-
-  },
-  watch:{
-
-    select3(curVal, oldVal){
-
-      if(curVal != oldVal){
-
-        this.chartUpdate("#preview", {'mark':curVal})
+  watch: {
+    select3(curVal, oldVal) {
+      if (curVal != oldVal) {
+        this.chartUpdate("#preview", { mark: curVal });
       }
     },
-    fillColor(curVal, oldVal){
-
-      if(curVal != oldVal){
-
-        this.chartEncodingUpdate("#preview", {'color':{'value': curVal}})
+    fillColor(curVal, oldVal) {
+      if (curVal != oldVal) {
+        this.chartEncodingUpdate("#preview", { color: { value: curVal } });
       }
     },
     dimensions: {
-      handler: function(newVal){
+      handler: function(newVal) {
+        this.encoding.x["field"] = newVal.x;
+        this.encoding.y["field"] = newVal.y;
 
-          this.encoding.x['field'] = newVal.x
-          this.encoding.y['field'] = newVal.y
-
-          if(this.encoding.x['type'] != undefined && this.encoding.x['field'] != undefined){
-             this.chartEncodingUpdate('#preview', this.encoding)
-          }
-          if(this.encoding.y['type'] != undefined && this.encoding.y['field'] != undefined){
-             this.chartEncodingUpdate('#preview', this.encoding)
-          }
-      
+        if (
+          this.encoding.x["type"] != undefined &&
+          this.encoding.x["field"] != undefined
+        ) {
+          this.chartEncodingUpdate("#preview", this.encoding);
+        }
+        if (
+          this.encoding.y["type"] != undefined &&
+          this.encoding.y["field"] != undefined
+        ) {
+          this.chartEncodingUpdate("#preview", this.encoding);
+        }
       },
       deep: true
     },
     types: {
-      handler: function(newVal){
+      handler: function(newVal) {
+        this.encoding.x["type"] = newVal.x;
+        this.encoding.y["type"] = newVal.y;
 
-          this.encoding.x['type'] = newVal.x
-          this.encoding.y['type'] = newVal.y
-
-          if(this.encoding.x['type'] != undefined && this.encoding.x['field'] != undefined){
-             this.chartEncodingUpdate('#preview', this.encoding)
-          }
-          if(this.encoding.y['type'] != undefined && this.encoding.y['field'] != undefined){
-             this.chartEncodingUpdate('#preview', this.encoding)
-          }
+        if (
+          this.encoding.x["type"] != undefined &&
+          this.encoding.x["field"] != undefined
+        ) {
+          this.chartEncodingUpdate("#preview", this.encoding);
+        }
+        if (
+          this.encoding.y["type"] != undefined &&
+          this.encoding.y["field"] != undefined
+        ) {
+          this.chartEncodingUpdate("#preview", this.encoding);
+        }
       },
       deep: true
     }
   },
-  mounted(){
+  mounted() {
+    this.chartInit("#preview");
 
-      this.chartInit("#preview");
+    window.addEventListener("resize", () => {
+      this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5);
+    });
 
-      window.addEventListener('resize', () => {
-        this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5)
-      });
-
-      dataHelper.getDataList().then(response => {
-        this.dataList = response.data;
-      });
-
-  },
-}
+    dataHelper.getDataList().then(response => {
+      this.dataList = response.data;
+    });
+  }
+};
 </script>
 
 <style lang="stylus" scoped>
-
-@import "./Styles/editor"
-
+@import './Styles/editor';
 </style>
