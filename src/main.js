@@ -9,6 +9,7 @@ import 'material-icons/iconfont/material-icons.css';
 
 import OnlineEditor from './components/Online_Editor'
 import Entrance from './components/Entrance'
+import BlueEditor from './components/BlueEditor'
 
 Vue.use(VueRouter)
 Vue.use(Vuesax, {
@@ -26,7 +27,8 @@ Vue.use(Vuesax, {
 const routes = [
 	{ path: '/', redirect: '/home' },
   { path: '/home', name: 'home', component: Entrance},
-  { path: '/editor', name: 'editor', component: OnlineEditor}
+  { path: '/editor', name: 'editor', component: OnlineEditor},
+  { path: '/blue', name: 'blue', component: BlueEditor}
 ]
 
 const router = new VueRouter({
