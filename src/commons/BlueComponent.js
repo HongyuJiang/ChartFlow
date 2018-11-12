@@ -1,5 +1,4 @@
 import * as d3 from 'd3'
-import BlueprintLine from "../commons/BlueprintLine";
 
 export default class BlueComponent {
 
@@ -10,8 +9,8 @@ export default class BlueComponent {
         this.stroke = '#999'
         this.name = 'UNAMED'
         this.type = 'default'
-        this.inPorts = [{'name':'Table'}]
-        this.outPorts = [{'name':'Fieid1'}, {'name':'Fieid2'}]
+        this.inPorts = [{'name':'Table','type':'in'}]
+        this.outPorts = [{'name':'Fieid1','type':'out'}, {'name':'Fieid2','type':'out'}]
         this.conenctions = []
         this.property = {}
         this.width = 180
@@ -93,7 +92,6 @@ export default class BlueComponent {
         .selectAll('.portname').remove()
 
         this.height = this.inPorts.length > this.outPorts.length ? 50 + this.inPorts.length * 30 : 50 + this.outPorts.length * 30
-
         this.container.selectAll('.back').attr('height', this.height)
 
         this.drawInPorts()
@@ -110,11 +108,26 @@ export default class BlueComponent {
         .attr('class','port')
         .attr('fill', '#993')
         .attr('stroke', 'white')
-        .attr('cx', 20)
+        .attr('cx', function(d){
+            d.x = 20 + that.x
+            return 20
+        })
         .attr('cy', function(d,i){
+            d.y = that.height * 0.2 + (i+1) * 30 + that.y
             return that.height * 0.2 + (i+1) * 30
         })
-        .attr('r', 3)
+        .attr('r', 4)
+        .on('mouseenter', function(d){
+            d3.select(this)
+            .transition()
+            .attr('r', 6)
+        })
+        .on('mouseout', function(d){
+
+            d3.select(this)
+            .transition()
+            .attr('r', 3)
+        })
 
         this.container
         .selectAll('portname')
@@ -124,9 +137,13 @@ export default class BlueComponent {
         .attr('class','portname')
         .attr("text-anchor", "start")
         .attr('alignment-baseline', 'central')
-        .attr('x', 30)
+        .attr('x', function(d){
+            d.x = 30
+            return 30
+        })
         .attr('y', function(d,i){
-            return that.height * 0.2 + (i+1) * 30
+            d.y = that.height * 0.2 + (i+1) * 30
+            return d.y 
         })
         .attr('fill','white')
         .text(function(d){
@@ -143,21 +160,27 @@ export default class BlueComponent {
         .attr('class','port')
         .attr('fill', '#339')
         .attr('stroke', 'white')
-        .attr('cx', this.width - 20)
+        .attr('cx', function(d,i){
+            d.x = that.width - 20 + that.x
+            return that.width - 20
+        })
         .attr('cy', function(d,i){
+            d.y = that.height * 0.2 + (i+1) * 30 + that.y
             return that.height * 0.2 + (i+1) * 30
         })
-        .attr('r', 3)
-        .on('click', function(d,i){
-
-            let x = that.x + that.width - 20
-
-            let y = that.y + that.height * 0.2 + (i+1) * 30
-
-            console.log([x,y])
-
-            let line = new BlueprintLine(that.canvas, [x,y])
+        .attr('r', 4)
+        .on('mouseenter', function(d){
+            d3.select(this)
+            .transition()
+            .attr('r', 6)
         })
+        .on('mouseout', function(d){
+
+            d3.select(this)
+            .transition()
+            .attr('r', 3)
+        })
+        
 
         this.container
         .selectAll('portname')
@@ -217,6 +240,34 @@ export default class BlueComponent {
     }
     dragended(node,d) {
         d3.select(node).classed("active", false);
+    }
+    getAllCircles(){
+
+        console.log(this.container.selectAll('.port'))
+
+        return this.container.selectAll('.port')
+    }
+    getAllPorts(){
+
+        let that = this
+        let ret = []
+
+        ret['inPorts'] = this.inPorts
+        ret['inPorts'].forEach(function(d){
+            d.x += that.x
+            d.y += that.y
+            d.parent = that.name
+            ret.push(d)
+        })
+
+        ret['outPorts'] = this.outPorts
+        ret['outPorts'].forEach(function(d){
+            d.x += that.x
+            d.y += that.y
+            d.parent = that.name
+            ret.push(d)
+        })
+        return ret
     }
 
 }

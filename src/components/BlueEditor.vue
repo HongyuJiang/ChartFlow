@@ -81,16 +81,14 @@
 <script>
 import vegaEmbed from "vega-embed";
 import config from "../assets/config.json";
-import sample_data from "../assets/data-sample.json";
 import $ from "jquery";
 import dataHelper from "../Helper/dataHelper";
 import BlueComponent from "../commons/BlueComponent";
 import * as d3 from 'd3'
 import blueComponentTypes from "../assets/blueComponentTypes.json";
 import modelConfig from "../assets/modelConfig.json";
+import BlueprintLine from "../commons/BlueprintLine";
 
-
-let global_data = sample_data;
 
 export default {
   name: "blue-editor",
@@ -108,6 +106,7 @@ export default {
       modelConfig: modelConfig,
       selectedData:{},
       dataComponent:{},
+      blueComponents:[]
 
     };
   },
@@ -140,6 +139,7 @@ export default {
       properties['name'] = name
 
       let _com = new BlueComponent(this.container, properties)
+      this.blueComponents.push(_com)
     },
     dimensionSelected(source, dim){
       dim.checked = !dim.checked;
@@ -158,7 +158,7 @@ export default {
         }
         else{
           this.selectedData[source][dim.name] = '1'
-          this.dataComponent[source].addPort('out', {'name': dim.name,'text': dim.name})
+          this.dataComponent[source].addPort('out', {'name': dim.name,'text': dim.name,'type':'out'})
         }
       }
       else{
@@ -166,15 +166,56 @@ export default {
         this.selectedData[source][dim.name] = '1'
 
         let properties = this.modelConfig['Table']
-        properties['outPorts'] = [{'name': dim.name,'text': dim.name}]
+        properties['outPorts'] = [{'name': dim.name,'text': dim.name,'type':'out'}]
         properties['name'] = source
         let _com = new BlueComponent(this.container, properties)
         this.dataComponent[source] = _com
+        this.blueComponents.push(_com)
       }
 
     }
   },
   watch: {
+
+    blueComponents(){
+
+      let that = this
+
+      let newCom = this.blueComponents[this.blueComponents.length-1]
+
+      newCom.getAllCircles().on('click', function(d){
+
+        let line = new BlueprintLine(that.container, [d.x,d.y])
+
+        let allPorts = []
+      
+        that.blueComponents.forEach(function(component){
+
+          let ports = component.getAllPorts()
+
+          console.log(ports)
+
+          if(d.type == 'in'){
+
+            ports['outPorts'].forEach(function(d){
+
+              allPorts.push(d)
+            })
+          }
+          else{
+
+            ports['inPorts'].forEach(function(d){
+
+              allPorts.push(d)
+            })
+          }
+
+        })
+
+        findNearestPoint(allPorts, d)
+          
+      })
+    }
     
   },
   mounted() {

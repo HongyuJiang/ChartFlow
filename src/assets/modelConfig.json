@@ -3,9 +3,9 @@
     "Barchart":{
 
         "inPorts": [
-            {"name":"X","text":"x","type":"necessary"},
-            {"name":"Y","text":"y","type":"necessary"},
-            {"name":"Fill","text":"fill","type":"color"}
+            {"name":"X","text":"x","attr":"necessary","type":"in"},
+            {"name":"Y","text":"y","attr":"necessary","type":"in"},
+            {"name":"Fill","text":"fill","attr":"color","type":"in"}
         ],
         "outPorts": [
 
@@ -16,9 +16,9 @@
     "Linechart":{
 
         "inPorts": [
-            {"name":"X","text":"x","type":"necessary"},
-            {"name":"Y","text":"y","type":"necessary"},
-            {"name":"Stroke","text":"stroke","type":"color"}
+            {"name":"X","text":"x","attr":"necessary","type":"in"},
+            {"name":"Y","text":"y","attr":"necessary","type":"in"},
+            {"name":"Stroke","text":"stroke","attr":"color","type":"in"}
         ],
         "outPorts": [
 
@@ -29,10 +29,10 @@
     "Scatterplot":{
 
         "inPorts": [
-            {"name":"X","text":"x","type":"necessary"},
-            {"name":"Y","text":"y","type":"necessary"},
-            {"name":"Fill","text":"fill","type":"color"},
-            {"name":"Size","text":"Size","type":"optional"}
+            {"name":"X","text":"x","attr":"necessary","type":"in"},
+            {"name":"Y","text":"y","attr":"necessary","type":"in"},
+            {"name":"Fill","text":"fill","attr":"color","type":"in"},
+            {"name":"Size","text":"Size","attr":"optional","type":"in"}
         ],
         "outPorts": [
 
@@ -43,21 +43,21 @@
     "Color":{
 
         "inPorts": [
-            {"name":"In","text":"In","type":"necessary"}
+            {"name":"In","text":"In","attr":"necessary" ,"type":"in"}
         ],
         "outPorts": [
-            {"name":"Out","text":"Out","type":"necessary"}
+            {"name":"Out","text":"Out","attr":"necessary","type":"out"}
         ],
         "type":"Operator"
     },
     "Sum":{
 
         "inPorts": [
-            {"name":"Num A","text":"Num A","type":"necessary"},
-            {"name":"Num B","text":"Num B","type":"necessary"}
+            {"name":"Num A","text":"Num A","attr":"necessary","type":"in"},
+            {"name":"Num B","text":"Num B","attr":"necessary","type":"in"}
         ],
         "outPorts": [
-            {"name":"Sum","text":"Sum","type":"necessary"}
+            {"name":"Sum","text":"Sum","attr":"necessary","type":"out"}
         ],
         "type":"Caculator"
     },

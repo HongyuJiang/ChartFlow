@@ -5,7 +5,6 @@ import $ from 'jquery'
 export default class BlueprintLine {
     constructor(container, point) {
 
-        console.log(container)
         //points [x,y]
         let that = this
         this.points = [point, point] //用于存储预览曲线时的两点
@@ -31,13 +30,36 @@ export default class BlueprintLine {
             that.generateCurveLine(p)
         })
 
-        $(this.container).one('click.circle', function (d) {
+        /*this.container.on('click.circle', function (d) {
             //确认预览曲线 生成动画
             that.container.on('mousemove.circle', null)
             that.generateCurveLineAnimate()
             that.isWaitPath == false
+        })*/
+
+    }
+    findNearestPoint(candicates, point){
+
+        let nearPoints = []
+
+        candicates.forEach(function(d){
+
+            let dis = (d.x - point.x) * (d.x - point.x) + (d.y - point.y) * (d.y - point.y)
+
+            if(dis < 5){
+
+                nearPoints.push({'dis':dis,'name':d.name})
+            }
         })
 
+        nearPoints = nearPoints.sort(function(a,b){
+
+            return a.dis - b.dis
+        })
+
+        console.log(nearPoints[0])
+
+        return nearPoints[0]
     }
     calculateCurvePointInterpolation(points) {
         //description 通过两点计算出中间曲线路径两个锚点
@@ -94,8 +116,8 @@ export default class BlueprintLine {
             pathData = lineGenerator(points),
             curveWidth = '2px';
 
-        let pathId = '',
-            circlesId = '';
+        let pathId = ''
+        let circlesId = '';
 
         if (this.isWaitPath == false) {
             //没有待绘制路径,路径第一次绘制
