@@ -1,0 +1,70 @@
+{
+
+    "Barchart":{
+
+        "inPorts": [
+            {"name":"X","text":"x","type":"necessary"},
+            {"name":"Y","text":"y","type":"necessary"},
+            {"name":"Fill","text":"fill","type":"color"}
+        ],
+        "outPorts": [
+
+        ],
+        "type": "Chart",
+        "maker": "bar"
+    },
+    "Linechart":{
+
+        "inPorts": [
+            {"name":"X","text":"x","type":"necessary"},
+            {"name":"Y","text":"y","type":"necessary"},
+            {"name":"Stroke","text":"stroke","type":"color"}
+        ],
+        "outPorts": [
+
+        ],
+        "type":"Chart",
+        "maker": "line"
+    },
+    "Scatterplot":{
+
+        "inPorts": [
+            {"name":"X","text":"x","type":"necessary"},
+            {"name":"Y","text":"y","type":"necessary"},
+            {"name":"Fill","text":"fill","type":"color"},
+            {"name":"Size","text":"Size","type":"optional"}
+        ],
+        "outPorts": [
+
+        ],
+        "type":"Chart",
+        "maker": "point"
+    },
+    "Color":{
+
+        "inPorts": [
+            {"name":"In","text":"In","type":"necessary"}
+        ],
+        "outPorts": [
+            {"name":"Out","text":"Out","type":"necessary"}
+        ],
+        "type":"Operator"
+    },
+    "Sum":{
+
+        "inPorts": [
+            {"name":"Num A","text":"Num A","type":"necessary"},
+            {"name":"Num B","text":"Num B","type":"necessary"}
+        ],
+        "outPorts": [
+            {"name":"Sum","text":"Sum","type":"necessary"}
+        ],
+        "type":"Caculator"
+    },
+    "Table":{
+
+        "inPorts": [],
+        "outPorts": [],
+        "type":"Data"
+    }
+}

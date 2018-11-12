@@ -6,7 +6,7 @@ export default class BlueComponent {
         
         let that = this
         this.fill = '#333'
-        this.stroke = '#666'
+        this.stroke = '#999'
         this.name = 'UNAMED'
         this.type = 'default'
         this.inPorts = [{'name':'Table'}]
@@ -14,19 +14,26 @@ export default class BlueComponent {
         this.conenctions = []
         this.property = {}
         this.width = 180
-        this.height = 120
+        this.x = 300 * Math.random() + 100
+        this.y = 100 * Math.random() + 100
 
-        this.x = options.x;
-        this.y = options.y;
-        this.property = options.property
+        for(let key in options){
+            this[key] = options[key]
+        }
+
+        this.width = this.name.length > 15 ? this.name.length * 10 : 180
+        this.height = this.inPorts.length > this.outPorts.length ? 50 + this.inPorts.length * 30 : 50 + this.outPorts.length * 30
+
         this.canvas = canvas
         this.container = canvas
         .datum({'x': this.x, 'y': this.y})
         .append('g')
         .attr('transform', function(d){
-
-            return 'translate(' + d.x + ',' + d.y + ')'
+            d.x = that.x
+            d.y = that.y
+            return 'translate(' + that.x + ',' + that.y + ')'
         })
+
         this.container.call(d3.drag()
             .on("start", function(d){
                 that.dragstarted(this, d)
@@ -40,6 +47,17 @@ export default class BlueComponent {
             
         this.draw()
     }
+    addPort(type, port){
+
+        if(type == 'in'){
+            this.inPorts.push(port)
+        }
+        else{
+            this.outPorts.push(port)
+        }
+
+        this.redraw()
+    }
     updatePosition(x, y){
         this.x = x;
         this.y = y;
@@ -51,45 +69,62 @@ export default class BlueComponent {
         }
         this.draw()
     }
-    drawBack(){
+    drawBack(height){
         
         this.container
         .append('rect')
-        .attr('x', this.x)
-        .attr('y', this.y)
+        .attr('class','back')
         .attr("rx", 6)
         .attr("ry", 6)
         .attr('width', this.width)
-        .attr('height', this.height)
+        .attr('height', height || this.height)
         .attr('fill', this.fill)
         .attr('stroke', this.stroke)
-        .attr('stroke-width', 3)
+        .attr('stroke-width', 2)
+    }
+    redraw(){
+        
+        this.container
+        .selectAll('.port').remove()
+
+        this.container
+        .selectAll('.portname').remove()
+
+        this.height = this.inPorts.length > this.outPorts.length ? 50 + this.inPorts.length * 30 : 50 + this.outPorts.length * 30
+
+        this.container.selectAll('.back').attr('height', this.height)
+
+        this.drawInPorts()
+        this.drawOutPorts()
+
     }
     drawInPorts(){
         let that = this
         this.container
-        .selectAll('.port')
+        .selectAll('port')
         .data(this.inPorts)
         .enter()
         .append('circle')
+        .attr('class','port')
         .attr('fill', '#993')
         .attr('stroke', 'white')
-        .attr('cx', this.x + 20)
+        .attr('cx', 20)
         .attr('cy', function(d,i){
-            return that.height * 0.2 + (i+1) * 30 + that.y
+            return that.height * 0.2 + (i+1) * 30
         })
         .attr('r', 3)
 
         this.container
-        .selectAll('.portName')
+        .selectAll('portname')
         .data(this.inPorts)
         .enter()
         .append('text')
+        .attr('class','portname')
         .attr("text-anchor", "start")
         .attr('alignment-baseline', 'central')
-        .attr('x', this.x + 30)
+        .attr('x', 30)
         .attr('y', function(d,i){
-            return that.height * 0.2 + (i+1) * 30 + that.y
+            return that.height * 0.2 + (i+1) * 30
         })
         .attr('fill','white')
         .text(function(d){
@@ -99,28 +134,30 @@ export default class BlueComponent {
     drawOutPorts(){
         let that = this
         this.container
-        .selectAll('.port')
+        .selectAll('port')
         .data(this.outPorts)
         .enter()
         .append('circle')
+        .attr('class','port')
         .attr('fill', '#339')
         .attr('stroke', 'white')
-        .attr('cx', this.x + this.width - 20)
+        .attr('cx', this.width - 20)
         .attr('cy', function(d,i){
-            return that.height * 0.2 + (i+1) * 30 + that.y
+            return that.height * 0.2 + (i+1) * 30
         })
         .attr('r', 3)
 
         this.container
-        .selectAll('.portName')
+        .selectAll('portname')
         .data(this.outPorts)
         .enter()
         .append('text')
+        .attr('class','portname')
         .attr("text-anchor", "end")
         .attr('alignment-baseline', 'central')
-        .attr('x', this.x + this.width - 30)
+        .attr('x', this.width - 30)
         .attr('y', function(d,i){
-            return that.height * 0.2 + (i+1) * 30 + that.y
+            return that.height * 0.2 + (i+1) * 30
         })
         .attr('fill','white')
         .text(function(d){
@@ -130,18 +167,18 @@ export default class BlueComponent {
     drawTitle(){
         this.container
         .append('text')
-        .attr('x', this.x + this.width/2)
-        .attr('y', this.y + 20)
+        .attr('x', this.width/2)
+        .attr('y', 20)
         .attr("text-anchor", "middle")
         .attr('fill','white')
         .text(this.name)
 
         this.container
         .append('line')
-        .attr('x1', this.x)
-        .attr('y1', this.y + 30)
-        .attr('x2', this.x + this.width)
-        .attr('y2', this.y + 30)
+        .attr('x1', 0)
+        .attr('y1', 30)
+        .attr('x2', this.width)
+        .attr('y2', 30)
         .attr('stroke','white')
        
     }

@@ -38,10 +38,7 @@
                   <div :key="index" v-for="(dim, index) in data.dimensions">
                     <vs-list-item :title="dim.name" :subtitle="dim.type">
                       <template>
-                        <vs-avatar v-if="dim.type == 'ordinal'" text="O"/>
-                        <vs-avatar v-if="dim.type == 'quantitative'" text="Q"/>
-                        <vs-avatar v-if="dim.type == 'nominal'" text="N"/>
-                        <vs-avatar v-if="dim.type == 'temporal'" text="T"/>
+                        <vs-avatar :color="dim.color" :text="dim.type[0].toLocaleUpperCase()" v-on:click="dimensionSelected(data.name, dim)"/>
                       </template>
                     </vs-list-item>
                   </div>
@@ -53,90 +50,28 @@
              <div id='preview'><svg id ='editorborad'></svg></div>
         </vs-col>
 
-        <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="2">
+        <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="2" style="max-height:700px;overflow-y:scroll">
             <div id='editor'>
 
-                <vs-button color="dark" type="filled" style="margin-left:10px">Add a layer</vs-button>
+              <vs-collapse accordion :key="index" v-for="(group, index) in componentTypes">
+                <vs-collapse-item>
+                  <div slot="header">
+                    {{group.name}}
+                  </div>
+                  <vs-list :key="index" v-for="(meta, index) in group.childrens">
 
-                <vs-button color="steelblue" type="filled" style="margin-left:10px">Add a chart</vs-button>
-
-                <vs-list>
-                    <vs-list-header class="dark" icon="settings" title="Configration - Global"></vs-list-header>
-                    <vs-list-item icon="create">
-
-                         <vs-select
-                          class="selectExample"
-                          label="Chart Type"
-                          v-model="select3"
-                          icon="arrow_downward"
-                          >
-                          <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="(item,index) in options3" />
-                        </vs-select>
-
-
-                    </vs-list-item>
-                    <vs-list-item icon="color_lens">
-
-                       <span>
-                        <input type="color"  v-model="fillColor">
-                        <input type="text" v-bind:style="{ color: fillColor}" v-model="fillColor" placeholder="#000000"/>
-                       </span>
-                       
-                    </vs-list-item>
-                    
-                    <vs-list-header class="dark" icon="settings" title="Configration - Encoding"></vs-list-header>
-                    <vs-list-item title="X" subtitle="Dim">
-
-                      <vs-select v-model="dimensions['x']">
-                        <vs-select-item :key="index" :value="item.name" :text="item.name" v-for="(item,index) in fields" />
-                      </vs-select>
-                      <vs-select v-model="types['x']" >
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="(item,index) in typesPrefab" />
-                      </vs-select>
-      
-                    </vs-list-item>
-                     <vs-list-item title="Y" subtitle="Dim">
-                      <vs-select v-model="dimensions['y']" >
-                        <vs-select-item :key="index" :value="item.name" :text="item.name" v-for="(item,index) in fields" />
-                      </vs-select>
-                      <vs-select v-model="types['y']">
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="(item,index) in typesPrefab" />
-                      </vs-select>
-                    </vs-list-item>
-
-                    <vs-list-header class="dark" icon="settings" title="Configration - Style"></vs-list-header>
-                    <vs-list-item title="Markersize">
-                      <vs-slider v-model="size" max='20' width='50'/>
-                    </vs-list-item>
-                    <vs-list-item title="Markernumber">
-                      <vs-input-number v-model="number"/>
-                    </vs-list-item>
-                    
-                </vs-list>
+                    <vs-button style="width:100%" color="rgb(134,4,98)" type="filled" :key="index" v-on:click="createNewComponent(group.name, meta)" icon="insert_chart">{{meta}}</vs-button>
+                    <vs-divider></vs-divider>
+                  </vs-list>  
+                </vs-collapse-item>
+              </vs-collapse >
+            
             </div>
         </vs-col>
     </vs-row>
 
     <vs-row vs-h="4">
-      <vs-col vs-type="flex" vs-justify="left" vs-align="top" vs-w="12">
-        <div id='thumbnail' style='overflow-x: auto; max-height:300px'>
-          <vs-card :key="index" v-for="(_chart, index) in chartStore" style="display:inline; float:left; margin:10px">
-            <div  class='card_container'>
-              <div slot="header">
-                <vs-chip>
-                  <vs-avatar text="LD"/>
-                  {{_chart.name}}
-                </vs-chip>
-              </div>
-              <h4> Source: {{_chart.source}} </h4> 
-              <h4> Dim: x: {{_chart.dimx}}, y: {{_chart.dimy}} </h4> 
-              <div style="margin-top:20px">
-                  <img :src="_chart.imgData" width="170">
-              </div>
-            </div>
-        </vs-card>
-        </div>
-      </vs-col>
+
   
     </vs-row>
 
@@ -148,10 +83,11 @@ import vegaEmbed from "vega-embed";
 import config from "../assets/config.json";
 import sample_data from "../assets/data-sample.json";
 import $ from "jquery";
-import * as fs from "browserify-fs";
 import dataHelper from "../Helper/dataHelper";
 import BlueComponent from "../commons/BlueComponent";
 import * as d3 from 'd3'
+import blueComponentTypes from "../assets/blueComponentTypes.json";
+import modelConfig from "../assets/modelConfig.json";
 
 
 let global_data = sample_data;
@@ -160,36 +96,18 @@ export default {
   name: "blue-editor",
   data() {
     return {
-      data: global_data,
       active: false,
-      options3: config.chartType,
-      select3: "bar",
-      fillColor: "#664433",
-      colorOptions: [
-        { text: "Black", value: "#333333" },
-        { text: "Red", value: "#993333" }
-      ],
-      fields: global_data.dimensions,
-      dimensions: { x: "a", y: "b" },
-      types: { x: "ordinal", y: "quantitative" },
-      typesPrefab: config.typesPrefab,
-      encoding: { x: {}, y: {} },
+      indexOfSelectedData:0,
       size: 10,
-      chartStore: [
-        {
-          name: "Chart I",
-          dimx: "a",
-          dimy: "b",
-          imgDara: "123",
-          source: "sampleData"
-        }
-      ],
       globalchartIndex: 0,
       dataList: [],
       number: 10,
-      indexOfSelectedData: 0,
-      width:0,
-      height:0,
+      componentTypes:blueComponentTypes,
+      container:'',
+      colors:{'Data':'#233D4D', 'Chart':'#FE502D', 'Caculator':'#24B473', 'Operator':'#A31BF2'},
+      modelConfig: modelConfig,
+      selectedData:{},
+      dataComponent:{},
 
     };
   },
@@ -201,12 +119,9 @@ export default {
         this.data[key] = props[key];
       }
 
-      this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5);
-
-      let svg = d3.select('#editorborad');
-
-      let _one = new BlueComponent(svg, {'x': 100, 'y': 100})
-  
+      this.chartResize(window.innerWidth * 0.7, window.innerHeight * 0.7);
+      this.container = d3.select('#editorborad');
+     
     },
    
     chartResize(innerWidth, innerHeight) {
@@ -217,18 +132,46 @@ export default {
 
       d3.select('#editorborad').attr('width', this.width).attr('height', this.height)
 
-      //vegaEmbed("#preview", this.data);
     },
-    dragstarted(node, d) {
+    createNewComponent(group, name){
 
-      d3.select(node).raise().classed("active", true);
+      let properties = this.modelConfig[name]
+      properties['fill'] = this.colors[group]
+      properties['name'] = name
+
+      let _com = new BlueComponent(this.container, properties)
     },
-    dragged(node, d){
-    
-      d3.select(node).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-    },
-    dragended(node,d) {
-      d3.select(node).classed("active", false);
+    dimensionSelected(source, dim){
+      dim.checked = !dim.checked;
+
+      if (dim.checked == true) dim.color = 'primary';
+      else dim.color = '#333';
+
+      //forced update datalist to re-rendering
+      let origin = this.dataList
+      this.dataList = []
+      this.dataList = origin
+
+      if(this.selectedData[source] != undefined){
+        if(this.selectedData[source][dim.name] != undefined){
+          this.selectedData[source][dim.name] = '0'
+        }
+        else{
+          this.selectedData[source][dim.name] = '1'
+          this.dataComponent[source].addPort('out', {'name': dim.name,'text': dim.name})
+        }
+      }
+      else{
+        this.selectedData[source] = {}
+        this.selectedData[source][dim.name] = '1'
+
+        let properties = this.modelConfig['Table']
+        properties['outPorts'] = [{'name': dim.name,'text': dim.name}]
+        properties['name'] = source
+        let _com = new BlueComponent(this.container, properties)
+        this.dataComponent[source] = _com
+      }
+
     }
   },
   watch: {
@@ -238,11 +181,17 @@ export default {
     this.chartInit("#preview");
 
     window.addEventListener("resize", () => {
-      this.chartResize(window.innerWidth * 0.5, window.innerHeight * 0.5);
+      this.chartResize(window.innerWidth * 0.7, window.innerHeight * 0.7);
     });
 
     dataHelper.getDataList().then(response => {
       this.dataList = response.data;
+      this.dataList.forEach(function(data){
+        data.dimensions.forEach(function(d){
+            d['checked'] = false;
+        })
+      })
+
     });
   }
 };
