@@ -1,4 +1,5 @@
 import * as d3 from 'd3'
+import BlueprintLine from "../commons/BlueprintLine";
 
 export default class BlueComponent {
 
@@ -25,6 +26,7 @@ export default class BlueComponent {
         this.height = this.inPorts.length > this.outPorts.length ? 50 + this.inPorts.length * 30 : 50 + this.outPorts.length * 30
 
         this.canvas = canvas
+
         this.container = canvas
         .datum({'x': this.x, 'y': this.y})
         .append('g')
@@ -146,6 +148,16 @@ export default class BlueComponent {
             return that.height * 0.2 + (i+1) * 30
         })
         .attr('r', 3)
+        .on('click', function(d,i){
+
+            let x = that.x + that.width - 20
+
+            let y = that.y + that.height * 0.2 + (i+1) * 30
+
+            console.log([x,y])
+
+            let line = new BlueprintLine(that.canvas, [x,y])
+        })
 
         this.container
         .selectAll('portname')

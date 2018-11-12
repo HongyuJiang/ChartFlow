@@ -1,15 +1,51 @@
 export default class caculator_modules {
-    static add() {
+    static add(data, dimensions) {
 
-        return axios.post('http://localhost:3000/api/getDataList');
+        let name = 'sum_'
+
+        for(i=0;i<dimensions.length;i++){
+
+            name += dimensions[0]
+        }
+
+        data.forEach(function(d){
+
+            let sum = 0
+
+            for(i=0;i<dimensions.length;i++){
+
+                dim = dimensions[i]
+                sum +=  d[dim]
+            }
+
+            d[name] = sum
+        })
+
+        return data
     }
     static multiple() {
 
-        return axios.post('http://localhost:3000/api/getDataList');
-    }
-    static reduce(dataname) {
+        let name = 'multi_'
 
-        return axios.post('http://localhost:3000/api/getData?dataname=' + dataname);
+        for(i=0;i<dimensions.length;i++){
+
+            name += dimensions[0]
+        }
+
+        data.forEach(function(d){
+
+            let result = 0
+
+            for(i=0;i<dimensions.length;i++){
+
+                dim = dimensions[i]
+                result +=  d[dim]
+            }
+
+            d[name] = result
+        })
+
+        return data
     }
   
 }

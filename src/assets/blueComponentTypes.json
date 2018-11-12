@@ -1,6 +1,18 @@
 [
-    { "name": "Data", "childrens": ["Table"]}, 
-    { "name": "Chart", "childrens": ["Barchart", "Linechart", "Scatterplot", "Boxplot"]}, 
-    { "name": "Caculator", "childrens": ["Sum", "Reduce", "Multi"]},  
-    { "name": "Operator", "childrens": ["Color", "Union", "Unique"]}
+    { 
+        "name": "Data", 
+        "childrens": ["Table"]
+    }, 
+    { 
+        "name": "Chart", 
+        "childrens": ["Barchart", "Linechart", "Scatterplot", "Boxplot"]
+    }, 
+    { 
+        "name": "Caculator", 
+        "childrens": ["Sum", "Reduce", "Multi"]
+    },  
+    { 
+        "name": "Operator", 
+        "childrens": ["Color", "Union", "Unique"]
+    }
 ]
