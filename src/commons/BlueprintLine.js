@@ -2,11 +2,13 @@
 import * as d3 from 'd3'
 
 export default class BlueprintLine {
-    constructor(container, point) {
+    constructor(container, point, source) {
 
         //points [x,y]
         let that = this
         this.sourcePoint = point
+        this.sourcePort = source
+        this.targetPort = {}
         this.points = [point, point] //用于存储预览曲线时的两点
         this.storePoints = [point, point] //初始点和预览点
         this.isWaitPath = false //false -> path正在移动 true -> path已经确定
@@ -33,6 +35,40 @@ export default class BlueprintLine {
         })
 
     }
+    parentPosUpdated(dx, dy, inPorts, outPorts){
+
+        let inPortsNames = {}
+        let outPortsNames = {}
+
+        inPorts.forEach(function(port){
+
+            inPortsNames[port.name] = 1
+        })
+
+        outPorts.forEach(function(port){
+
+            outPortsNames[port.name] = 1
+        })
+
+        console.log(inPortsNames, outPortsNames, this.sourcePort.name, this.targetPort.name)
+
+        if(this.sourcePort.name in inPortsNames || this.sourcePort.name in outPortsNames){
+
+            this.storePoints[0][0] += dx
+            this.storePoints[0][1] += dy
+
+            let p = this.calculateCurvePointInterpolation(this.storePoints)
+            this.generateCurveLine(p)
+        }
+        else if(this.targetPort.name in outPortsNames || this.targetPort.name in inPortsNames){
+
+            this.storePoints[1][0] += dx
+            this.storePoints[1][1] += dy
+
+            let p = this.calculateCurvePointInterpolation(this.storePoints)
+            this.generateCurveLine(p)
+        }
+    }
     setExstingPorts(ports){
 
         this.existingPort = ports;
@@ -40,19 +76,19 @@ export default class BlueprintLine {
     findNearestPoint(point){
 
         let that = this
-
         if(this.existingPort.length > 0){
             
             let nearPoints = []
+            this.existingPort.forEach(function(port){
 
-            this.existingPort.forEach(function(d){
+                let x = port.x + port.parentX
+                let y = port.y + port.parentY
     
-                let dis = (d.x - point[0]) * (d.x - point[0]) +
-                 (d.y - point[1]) * (d.y - point[1])
+                let dis = (x - point[0]) * (x - point[0]) +
+                 (y - point[1]) * (y - point[1])
                 
                 if(dis < 400){
-    
-                    nearPoints.push({'dis':dis,'name':d.name})
+                    nearPoints.push({'dis':dis,'port':port,'pos':[x, y]})
                 }
             })
     
@@ -62,9 +98,18 @@ export default class BlueprintLine {
 
             if(nearPoints[0] != undefined && nearPoints[0] != null){
 
+                console.log('connected')
+
                 that.container.on('mousemove.circle', null)
-                that.generateCurveLineAnimate()
+
+                that.storePoints.pop()
+                that.storePoints.push(nearPoints[0].pos)
+                let p = that.calculateCurvePointInterpolation(that.storePoints)
+                that.generateCurveLine(p)
+                //that.generateCurveLineAnimate()
                 that.isWaitPath == false
+
+                this.targetPort = nearPoints[0].port
             }
     
             //return nearPoints[0]
@@ -140,7 +185,7 @@ export default class BlueprintLine {
             let path = this.container.append('path')
                 .attr('d', pathData)
                 .style('fill', 'none')
-                .style('stroke', '#999')
+                .style('stroke', '#333')
                 .attr('id', pathId)
                 .attr('stroke-width', curveWidth)
         } else {
@@ -152,9 +197,6 @@ export default class BlueprintLine {
 
             d3.select('#' + pathId)
                 .attr('d', pathData)
-                .style('fill', 'none')
-                .style('stroke', '#999')
-                .attr('stroke-width', curveWidth)
 
             let myPath = d3.select('#' + pathId).node();
         }

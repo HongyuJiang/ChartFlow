@@ -14,6 +14,8 @@ export default class BlueComponent {
         this.conenctions = []
         this.property = {}
         this.width = 180
+        this.dx = 0
+        this.dy = 0
         this.x = 300 * Math.random() + 100
         this.y = 100 * Math.random() + 100
 
@@ -30,9 +32,7 @@ export default class BlueComponent {
         .datum({'x': this.x, 'y': this.y})
         .append('g')
         .attr('transform', function(d){
-            d.x = that.x
-            d.y = that.y
-            return 'translate(' + that.x + ',' + that.y + ')'
+            return 'translate(' + d.x + ',' + d.y + ')'
         })
 
         this.container.call(d3.drag()
@@ -47,6 +47,10 @@ export default class BlueComponent {
             }));
             
         this.draw()
+    }
+    getPos(){
+
+        return {'x':this.x,'y':this.y, 'dx':this.dx, 'dy':this.dy}
     }
     addPort(type, port){
 
@@ -106,28 +110,18 @@ export default class BlueComponent {
         .enter()
         .append('circle')
         .attr('class','port')
-        .attr('fill', '#993')
+        .attr('fill', '#339')
         .attr('stroke', 'white')
         .attr('cx', function(d){
-            d.x = 20 + that.x
-            return 20
+            d.x = 20
+            return d.x
         })
         .attr('cy', function(d,i){
-            d.y = that.height * 0.2 + (i+1) * 30 + that.y
+            d.y = that.height * 0.2 + (i+1) * 30
             return that.height * 0.2 + (i+1) * 30
         })
-        .attr('r', 4)
-        .on('mouseenter', function(d){
-            d3.select(this)
-            .transition()
-            .attr('r', 6)
-        })
-        .on('mouseout', function(d){
+        .attr('r', 6)
 
-            d3.select(this)
-            .transition()
-            .attr('r', 4)
-        })
 
         this.container
         .selectAll('portname')
@@ -161,27 +155,15 @@ export default class BlueComponent {
         .attr('fill', '#339')
         .attr('stroke', 'white')
         .attr('cx', function(d,i){
-            d.x = that.width - 20 + that.x
-            return that.width - 20
+            d.x = that.width - 20
+            return d.x 
         })
         .attr('cy', function(d,i){
-            d.y = that.height * 0.2 + (i+1) * 30 + that.y
-            return that.height * 0.2 + (i+1) * 30
+            d.y = that.height * 0.2 + (i+1) * 30
+            return d.y
         })
-        .attr('r', 4)
-        .on('mouseenter', function(d){
-            d3.select(this)
-            .transition()
-            .attr('r', 6)
-        })
-        .on('mouseout', function(d){
-
-            d3.select(this)
-            .transition()
-            .attr('r', 4)
-        })
+        .attr('r', 6)
         
-
         this.container
         .selectAll('portname')
         .data(this.outPorts)
@@ -218,6 +200,7 @@ export default class BlueComponent {
        
     }
     draw(){
+
         this.drawBack()
         this.drawTitle()
         this.drawInPorts()
@@ -229,18 +212,27 @@ export default class BlueComponent {
     }
     dragged(node, d){ 
 
-        this.x = d3.event.x
-        this.y = d3.event.y
+        let that = this
 
         d3.select(node).attr("transform", function(q){
-            d.x = d3.event.x
-            d.y = d3.event.y
+            that.dx = d3.event.x - that.x
+            that.dy = d3.event.y - that.y
+            that.x = d.x = d3.event.x
+            that.y = d.y = d3.event.y
             return 'translate(' + d.x + ',' + d.y + ')'
         });
+
+        this.container.selectAll('.port')
+        .attr('none', function(d){
+            d.parentX = that.x
+            d.parentY = that.y
+        })
+
     }
     dragended(node,d) {
         d3.select(node).classed("active", false);
     }
+
     getAllCircles(){
 
         return this.container.selectAll('.port')
@@ -252,16 +244,18 @@ export default class BlueComponent {
 
         ret['inPorts'] = this.inPorts
         ret['inPorts'].forEach(function(d){
-            d.x += that.x
-            d.y += that.y
+
+            d.parentX = that.x
+            d.parentY = that.y
             d.parent = that.name
             ret.push(d)
         })
 
         ret['outPorts'] = this.outPorts
         ret['outPorts'].forEach(function(d){
-            d.x += that.x
-            d.y += that.y
+
+            d.parentX = that.x
+            d.parentY = that.y
             d.parent = that.name
             ret.push(d)
         })

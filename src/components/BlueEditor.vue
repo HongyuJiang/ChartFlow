@@ -102,11 +102,12 @@ export default {
       number: 10,
       componentTypes:blueComponentTypes,
       container:'',
-      colors:{'Data':'#233D4D', 'Chart':'#FE502D', 'Caculator':'#24B473', 'Operator':'#A31BF2'},
+      colors:{'Data':'#233D4D', 'Chart':'#de3e3e', 'Caculator':'#24B473', 'Operator':'rgb(136, 48, 160)'},
       modelConfig: modelConfig,
       selectedData:{},
       dataComponent:{},
-      blueComponents:[]
+      blueComponents:[],
+      blueLines:[]
 
     };
   },
@@ -141,6 +142,40 @@ export default {
       let _com = new BlueComponent(this.container, properties)
       this.blueComponents.push(_com)
     },
+    addClickEvent2Circle(com){
+
+      let that = this
+
+      com.getAllCircles().on('click', function(d){
+
+        let x = d.parentX + d.x
+        let y = d.parentY + d.y
+
+        console.log(d.parentX, d.x, d.parentY, d.y)
+
+        let line = new BlueprintLine(that.container, [x, y], d)
+        that.blueLines.push(line)
+
+        let allPorts = []
+        
+        that.blueComponents.forEach(function(component){
+
+          let ports = component.getAllPorts()
+          if(d.type == 'in'){
+            ports['outPorts'].forEach(function(d){
+              allPorts.push(d)
+            })
+          }
+          else{
+            ports['inPorts'].forEach(function(d){
+              allPorts.push(d)
+            })
+          }
+        })
+        line.setExstingPorts(allPorts)
+          
+      })
+    },
     dimensionSelected(source, dim){
       dim.checked = !dim.checked;
 
@@ -159,6 +194,7 @@ export default {
         else{
           this.selectedData[source][dim.name] = '1'
           this.dataComponent[source].addPort('out', {'name': dim.name,'text': dim.name,'type':'out'})
+          this.addClickEvent2Circle(this.dataComponent[source])
         }
       }
       else{
@@ -170,6 +206,7 @@ export default {
         properties['name'] = source
         let _com = new BlueComponent(this.container, properties)
         this.dataComponent[source] = _com
+        this.addClickEvent2Circle(_com)
         this.blueComponents.push(_com)
       }
 
@@ -177,44 +214,33 @@ export default {
   },
   watch: {
 
-    blueComponents(){
+    blueComponents: {
 
-      let that = this
+      handler(curVal, oldVal){
 
-      let newCom = this.blueComponents[this.blueComponents.length-1]
+        if(curVal.length == oldVal.length){
 
-      newCom.getAllCircles().on('click', function(d){
+          for(let i=0;i<curVal.length;i++){
 
-        let line = new BlueprintLine(that.container, [d.x,d.y])
+            let curEle = curVal[i]
+            let preEle = oldVal[i]
 
-        let allPorts = []
-      
-        that.blueComponents.forEach(function(component){
+            let curPos = curEle.getPos()
+            let prePos = preEle.getPos()
 
-          let ports = component.getAllPorts()
-          
-          if(d.type == 'in'){
+            this.blueLines.forEach(function(line){
 
-            ports['outPorts'].forEach(function(d){
-
-              allPorts.push(d)
+              line.parentPosUpdated(curPos.dx, curPos.dy, curEle.inPorts, curEle.outPorts)
             })
-          }
-          else{
-
-            ports['inPorts'].forEach(function(d){
-
-              allPorts.push(d)
-            })
-          }
-
-        })
-
-        console.log(allPorts)
-
-        line.setExstingPorts(allPorts)
           
-      })
+          }
+        }
+
+      },
+      deep: true
+    },
+    blueLines(){
+
     }
     
   },
