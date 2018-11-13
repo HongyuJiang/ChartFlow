@@ -192,9 +192,7 @@ export default {
         that.blueComponents.forEach(function(component){
 
           let ports = component.getAllPorts()
-
-          console.log(ports)
-
+          
           if(d.type == 'in'){
 
             ports['outPorts'].forEach(function(d){
@@ -212,7 +210,9 @@ export default {
 
         })
 
-        findNearestPoint(allPorts, d)
+        console.log(allPorts)
+
+        line.setExstingPorts(allPorts)
           
       })
     }

@@ -1,12 +1,12 @@
 
 import * as d3 from 'd3'
-import $ from 'jquery'
 
 export default class BlueprintLine {
     constructor(container, point) {
 
         //points [x,y]
         let that = this
+        this.sourcePoint = point
         this.points = [point, point] //用于存储预览曲线时的两点
         this.storePoints = [point, point] //初始点和预览点
         this.isWaitPath = false //false -> path正在移动 true -> path已经确定
@@ -14,6 +14,7 @@ export default class BlueprintLine {
         this.circleCoordinatesY = '' //预览路径时末端端点Y
         this.pathCount = 0
         this.container = container
+        this.existingPort = []
 
         this.container.on('mousemove.circle', function (d) {
             //监听鼠标移动更新计算预览点 生成预览曲线
@@ -28,38 +29,48 @@ export default class BlueprintLine {
 
             let p = that.calculateCurvePointInterpolation(that.storePoints)
             that.generateCurveLine(p)
+            that.findNearestPoint(coordinates)
         })
-
-        /*this.container.on('click.circle', function (d) {
-            //确认预览曲线 生成动画
-            that.container.on('mousemove.circle', null)
-            that.generateCurveLineAnimate()
-            that.isWaitPath == false
-        })*/
 
     }
-    findNearestPoint(candicates, point){
+    setExstingPorts(ports){
 
-        let nearPoints = []
+        this.existingPort = ports;
+    }
+    findNearestPoint(point){
 
-        candicates.forEach(function(d){
+        let that = this
 
-            let dis = (d.x - point.x) * (d.x - point.x) + (d.y - point.y) * (d.y - point.y)
+        if(this.existingPort.length > 0){
+            
+            let nearPoints = []
 
-            if(dis < 5){
+            this.existingPort.forEach(function(d){
+    
+                let dis = (d.x - point[0]) * (d.x - point[0]) +
+                 (d.y - point[1]) * (d.y - point[1])
+                
+                if(dis < 400){
+    
+                    nearPoints.push({'dis':dis,'name':d.name})
+                }
+            })
+    
+            nearPoints = nearPoints.sort(function(a,b){
+                return a.dis - b.dis
+            })
 
-                nearPoints.push({'dis':dis,'name':d.name})
+            if(nearPoints[0] != undefined && nearPoints[0] != null){
+
+                that.container.on('mousemove.circle', null)
+                that.generateCurveLineAnimate()
+                that.isWaitPath == false
             }
-        })
+    
+            //return nearPoints[0]
 
-        nearPoints = nearPoints.sort(function(a,b){
-
-            return a.dis - b.dis
-        })
-
-        console.log(nearPoints[0])
-
-        return nearPoints[0]
+        }
+       
     }
     calculateCurvePointInterpolation(points) {
         //description 通过两点计算出中间曲线路径两个锚点

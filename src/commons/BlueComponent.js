@@ -126,7 +126,7 @@ export default class BlueComponent {
 
             d3.select(this)
             .transition()
-            .attr('r', 3)
+            .attr('r', 4)
         })
 
         this.container
@@ -178,7 +178,7 @@ export default class BlueComponent {
 
             d3.select(this)
             .transition()
-            .attr('r', 3)
+            .attr('r', 4)
         })
         
 
@@ -242,8 +242,6 @@ export default class BlueComponent {
         d3.select(node).classed("active", false);
     }
     getAllCircles(){
-
-        console.log(this.container.selectAll('.port'))
 
         return this.container.selectAll('.port')
     }
