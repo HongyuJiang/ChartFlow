@@ -96,10 +96,8 @@ export default {
     return {
       active: false,
       indexOfSelectedData:0,
-      size: 10,
       globalchartIndex: 0,
       dataList: [],
-      number: 10,
       componentTypes:blueComponentTypes,
       container:'',
       colors:{'Data':'#233D4D', 'Chart':'#de3e3e', 'Caculator':'#24B473', 'Operator':'rgb(136, 48, 160)'},
@@ -107,7 +105,10 @@ export default {
       selectedData:{},
       dataComponent:{},
       blueComponents:[],
-      blueLines:[]
+      blueLines:[],
+      connections:[],
+      mouseAction:'',
+      drawingLine:''
 
     };
   },
@@ -140,21 +141,37 @@ export default {
       properties['name'] = name
 
       let _com = new BlueComponent(this.container, properties)
+      this.addClickEvent2Circle(_com)
       this.blueComponents.push(_com)
     },
     addClickEvent2Circle(com){
 
       let that = this
 
+      this.container.on('mousemove', function(d){
+
+        //console.log('move')
+
+        if(that.mouseAction == 'drawing_line' && that.drawingLine.targetPort == ''){
+
+          let coordinates = d3.mouse(this)
+          that.drawingLine.dynamicGenerateCurveLine(coordinates)
+          that.drawingLine.findNearestPoint(coordinates)
+        }
+
+      })
+
       com.getAllCircles().on('click', function(d){
+
+        console.log('click')
 
         let x = d.parentX + d.x
         let y = d.parentY + d.y
 
-        console.log(d.parentX, d.x, d.parentY, d.y)
-
-        let line = new BlueprintLine(that.container, [x, y], d)
+        let line = that.drawingLine = new BlueprintLine(that.container, [x, y], d)
         that.blueLines.push(line)
+
+        that.mouseAction = 'drawing_line'
 
         let allPorts = []
         
@@ -231,6 +248,9 @@ export default {
             this.blueLines.forEach(function(line){
 
               line.parentPosUpdated(curPos.dx, curPos.dy, curEle.inPorts, curEle.outPorts)
+
+              curEle.resetDeltaPos()
+              preEle.resetDeltaPos()
             })
           
           }
@@ -239,12 +259,32 @@ export default {
       },
       deep: true
     },
-    blueLines(){
+    blueLines: {
 
-    }
+      handler(curVal, oldVal){
+
+        if(this.connections.length < curVal.length){
+          
+          for(let i=0;i<curVal.length;i++){
+
+            if(curVal[i].targetPort != ''){
+
+              this.connections.push({'source':curVal[i].sourcePort, 'target':curVal[i].targetPort})
+
+              //console.log(this.connections)
+            }
+          }
+        }
+
+
+      },
+      deep: true
+    },
     
   },
   mounted() {
+
+    let that = this
     this.chartInit("#preview");
 
     window.addEventListener("resize", () => {
@@ -260,6 +300,12 @@ export default {
       })
 
     });
+
+    setInterval(function(){
+      that.blueLines.forEach(function(line){
+        line.animate()
+      })
+    },20)
   }
 };
 </script>

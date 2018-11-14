@@ -8,7 +8,7 @@ export default class BlueprintLine {
         let that = this
         this.sourcePoint = point
         this.sourcePort = source
-        this.targetPort = {}
+        this.targetPort = ''
         this.points = [point, point] //用于存储预览曲线时的两点
         this.storePoints = [point, point] //初始点和预览点
         this.isWaitPath = false //false -> path正在移动 true -> path已经确定
@@ -17,105 +17,99 @@ export default class BlueprintLine {
         this.pathCount = 0
         this.container = container
         this.existingPort = []
+        this.toUpdateSourcePoint = false // false -> update target point / true -> update source point
+        this.count = 10000
+        this.animateSpeed = 5
+        this.coverLine = ''
+        this.baseLine = ''
 
-        this.container.on('mousemove.circle', function (d) {
+        this.pathCount++
+        /*this.container.on('mousemove.circle', function (d) {
+
             //监听鼠标移动更新计算预览点 生成预览曲线
             let coordinates = d3.mouse(this)
-            that.circleCoordinatesX = coordinates[0]
-            that.circleCoordinatesY = coordinates[1]
-
-            if (that.storePoints.length == 2) {
-                that.storePoints.pop()
-                that.storePoints.push([that.circleCoordinatesX, that.circleCoordinatesY])
-            }
-
-            let p = that.calculateCurvePointInterpolation(that.storePoints)
-            that.generateCurveLine(p)
+            that.dynamicGenerateCurveLine(coordinates)
             that.findNearestPoint(coordinates)
-        })
+        })*/
 
     }
-    parentPosUpdated(dx, dy, inPorts, outPorts){
+    parentPosUpdated(dx, dy, inPorts, outPorts) {
 
         let inPortsNames = {}
         let outPortsNames = {}
 
-        inPorts.forEach(function(port){
-
+        inPorts.forEach(function (port) {
             inPortsNames[port.name] = 1
         })
 
-        outPorts.forEach(function(port){
-
+        outPorts.forEach(function (port) {
             outPortsNames[port.name] = 1
         })
 
-        console.log(inPortsNames, outPortsNames, this.sourcePort.name, this.targetPort.name)
-
-        if(this.sourcePort.name in inPortsNames || this.sourcePort.name in outPortsNames){
+        if (this.sourcePort.name in inPortsNames || this.sourcePort.name in outPortsNames) {
 
             this.storePoints[0][0] += dx
             this.storePoints[0][1] += dy
-
-            let p = this.calculateCurvePointInterpolation(this.storePoints)
-            this.generateCurveLine(p)
+            this.dynamicGenerateCurveLine()
+            this.updateCoverLine()
         }
-        else if(this.targetPort.name in outPortsNames || this.targetPort.name in inPortsNames){
+        else if (this.targetPort.name in outPortsNames || this.targetPort.name in inPortsNames) {
 
             this.storePoints[1][0] += dx
             this.storePoints[1][1] += dy
-
-            let p = this.calculateCurvePointInterpolation(this.storePoints)
-            this.generateCurveLine(p)
+            this.dynamicGenerateCurveLine()
+            this.updateCoverLine()
+       
         }
     }
-    setExstingPorts(ports){
+    setExstingPorts(ports) {
 
         this.existingPort = ports;
     }
-    findNearestPoint(point){
+    findNearestPoint(point) {
 
         let that = this
-        if(this.existingPort.length > 0){
-            
+        if (this.existingPort.length > 0) {
+
             let nearPoints = []
-            this.existingPort.forEach(function(port){
+            this.existingPort.forEach(function (port) {
 
                 let x = port.x + port.parentX
                 let y = port.y + port.parentY
-    
+
                 let dis = (x - point[0]) * (x - point[0]) +
-                 (y - point[1]) * (y - point[1])
-                
-                if(dis < 400){
-                    nearPoints.push({'dis':dis,'port':port,'pos':[x, y]})
+                    (y - point[1]) * (y - point[1])
+
+                if (dis < 400) {
+                    nearPoints.push({ 'dis': dis, 'port': port, 'pos': [x, y] })
                 }
             })
-    
-            nearPoints = nearPoints.sort(function(a,b){
+
+            nearPoints = nearPoints.sort(function (a, b) {
                 return a.dis - b.dis
             })
 
-            if(nearPoints[0] != undefined && nearPoints[0] != null){
+            if (nearPoints[0] != undefined && nearPoints[0] != null) {
 
-                console.log('connected')
+                console.log(that.storePoints)
 
                 that.container.on('mousemove.circle', null)
+              
+                that.targetPort = nearPoints[0].port
+                that.storePoints[1] = nearPoints[0].pos
 
-                that.storePoints.pop()
-                that.storePoints.push(nearPoints[0].pos)
-                let p = that.calculateCurvePointInterpolation(that.storePoints)
-                that.generateCurveLine(p)
-                //that.generateCurveLineAnimate()
+                that.generateAnimateCoverCurveLine()
+                that.dynamicGenerateCurveLine()
+               
+                //that.updateCoverLine()
                 that.isWaitPath == false
+                
+                
 
-                this.targetPort = nearPoints[0].port
             }
-    
-            //return nearPoints[0]
 
         }
-       
+
     }
     calculateCurvePointInterpolation(points) {
         //description 通过两点计算出中间曲线路径两个锚点
@@ -168,113 +162,172 @@ export default class BlueprintLine {
         //description 根据d3.curveBasis生成曲线
         //input [[xa,ya],[x1,y1],[x2,y2],[xb,yb]]
         //曲线生成器
+
         let lineGenerator = d3.line().curve(d3.curveBasis),
             pathData = lineGenerator(points),
-            curveWidth = '2px';
-
-        let pathId = ''
-        let circlesId = '';
+            curveWidth = '4px';
 
         if (this.isWaitPath == false) {
-            //没有待绘制路径,路径第一次绘制
-            pathId = 'myPath_' + this.pathCount;
-            circlesId = 'myCircles_' + this.pathCount;
-            this.pathCount++;
 
+            //没有待绘制路径,路径第一次绘制
             this.isWaitPath = !this.isWaitPath
-            let path = this.container.append('path')
+            this.baseLine = this.container.append('path')
                 .attr('d', pathData)
                 .style('fill', 'none')
-                .style('stroke', '#333')
-                .attr('id', pathId)
+                .style('stroke', '#999')
                 .attr('stroke-width', curveWidth)
-        } else {
+        } 
+        else {
             //存在待绘制路径,反复绘制实现路径预览
-            this.pathCount--;
-            pathId = 'myPath_' + this.pathCount;
-            circlesId = 'myCircles_' + this.pathCount;
-            this.pathCount++;
-
-            d3.select('#' + pathId)
+            this.baseLine
                 .attr('d', pathData)
 
-            let myPath = d3.select('#' + pathId).node();
         }
     }
-    generateCurveLineAnimate() {
-        //找到线的id与圆的id
-        this.pathCount--;
-        let pathId = 'myPath_' + this.pathCount,
-            circlesId = 'myCircles_' + this.pathCount;
-        this.pathCount++;
 
-        let myPath = d3.select('#' + pathId).node()
-        let totalLength = myPath.getTotalLength(),
-            gap = 5,
-            numberOfDots = Math.floor(totalLength / gap),
-            count = 0,
-            r = 2,
-            circleBackColor = "white",
-            circleColor = "blue";
+    updateCoverLine(){
 
+        let points = this.calculateCurvePointInterpolation(this.storePoints)
+        let lineGenerator = d3.line().curve(d3.curveBasis),
+            pathData = lineGenerator(points);
 
-        let essentialSpeed = totalLength / numberOfDots * 7, //计算动画速度
-            speed = 4 //动画拖尾效果
+        console.log(this.coverLine)
 
-        let duration = essentialSpeed,
-            updateDuration = essentialSpeed * speed
+        if(this.coverLine != ''){
 
-        //通过path生成点数据
-        let dotsData = d3.range(numberOfDots).map(function (d, i) {
-            let length = myPath.getTotalLength() * (i / numberOfDots);
-            let point = myPath.getPointAtLength(length);
-            //return point.x; 
-            return [point.x, point.y];
-        });
-
-        //生成点
-        let dots = this.container.selectAll(".ddot")
-            .data(dotsData)
-            .enter()
-            .append("circle")
-            .attr('id', circlesId)
-            .attr("cx", function (d, i) { return d[0]; })
-            .attr("cy", function (d, i) { return d[1]; })
-            .attr("r", r);
-
-        //点动画
-        let tid = setInterval(updateDots, duration);
-
-        function updateDots() {
-            d3.selectAll('#' + circlesId)
-                .transition()
-                .duration(updateDuration)
-                .style("fill", function (d, i) {
-                    let colour = circleBackColor
-                    //if at the end or near the end of the path, start from the beginning
-                    if (count == numberOfDots) {
-                        if (i == numberOfDots || i == 0 || i == 1) {
-                            colour = circleColor;
-                        } else {
-                            colour = circleBackColor;
-                        };
-                    } else if (count == (numberOfDots - 1)) {
-                        if (i == numberOfDots || i == (numberOfDots - 1) || i == 0) {
-                            colour = circleColor;
-                        } else {
-                            colour = circleBackColor;
-                        };
-                        //else shade the 3 dots from the count onwards
-                    } else {
-                        if (i == count || i == (count + 1) || i == (count + 2)) {
-                            colour = circleColor;
-                        } else {
-                            colour = circleBackColor;
-                        };
-                    };
-                    return colour
-                });
-            count = count == numberOfDots ? 0 : count + 1;
-        };
+            this.coverLine.attr('d', pathData)
+        }
+    
     }
+
+    generateAnimateCoverCurveLine() {
+
+        //曲线生成器
+        let points = this.calculateCurvePointInterpolation(this.storePoints)
+        let lineGenerator = d3.line().curve(d3.curveBasis),
+            pathData = lineGenerator(points),
+            curveWidth = '2px',
+            totalLength = 0
+
+        //生成渐变
+        let defs = this.container.append('defs')
+        let linearGradient = defs.append('linearGradient')
+            .attr('id', 'linearColor')
+            .attr('x1', '0%')
+            .attr('y1', '0%')
+            .attr('x2', '100%')
+            .attr('y2', '0%')
+
+        linearGradient.append("stop")
+            .attr("offset", "0%")
+            .style("stop-color", 'blue');
+
+        linearGradient.append("stop")
+            .attr("offset", "100%")
+            .style("stop-color", 'green');
+
+        //绘制cover曲线
+        this.coverLine = this.container.append('path')
+            .attr('d', pathData)
+            .style('fill', 'none')
+            .style('stroke', "url(#" + linearGradient.attr("id") + ")")
+            .attr('class', 'rgbLine')
+            .attr('stroke-width', curveWidth)
+
+        //获取生成曲线长度并设定线段间隔为曲线长度
+        totalLength = this.coverLine.node().getTotalLength()
+        this.coverLine.style('stroke-dasharray', totalLength + "," + totalLength)
+
+    }
+
+    animate(){
+
+        if(this.targetPort != ''){
+
+            this.count = this.count - this.animateSpeed;
+            d3.selectAll('.rgbLine')
+                .style('stroke-dashoffset', this.count)
+        }
+       
+    }
+
+    generateEndPoints() {
+        let that = this
+        let pathCount = this.pathCount
+        let circleSourceId = 'mySourceCircle_' + this.pathCount;
+        let circleTargetId = 'myTargetCircle_' + this.pathCount;
+
+        let circleSource = this.container.append('circle')
+            .attr('id', circleSourceId)
+            .attr('cx', that.storePoints[0][0])
+            .attr('cy', that.storePoints[0][1])
+            .attr('pathCount', pathCount)
+            .attr('pointPosition', '0') // 0 -> source that.toUpdateSourcePoint = true
+            .attr('r', 2)
+            .style('opacity', 1)
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended))
+
+        let circleTarget = this.container.append('circle')
+            .attr('id', circleTargetId)
+            .attr('cx', that.storePoints[1][0])
+            .attr('cy', that.storePoints[1][1])
+            .attr('pathCount', pathCount)
+            .attr('pointPosition', '1') // 1 -> target that.updatePoint = false
+            .attr('r', 2)
+            .style('opacity', 1)
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended))
+
+        function dragstarted(d) { }
+        function dragged(d) {
+            //端点随着鼠标移动
+            d3.select(this).attr("cx", d3.event.x).attr("cy", d3.event.y);
+            //judge source point / target point
+            that.toUpdateSourcePoint = d3.select(this).attr('pointPosition') == '0' ? true : false
+
+            let coverPathId = 'myCoverPath_' + d3.select(this).attr('pathCount'),
+                coverPath = d3.select('#' + coverPathId);
+
+            //删除coverPath
+            coverPath.remove()
+
+            let coordinates = d3.mouse(this)
+            that.dynamicGenerateCurveLine(coordinates)
+        }
+
+        function dragended(d) {
+            that.generateAnimateCoverCurveLine()
+            that.isWaitPath == false
+        }
+    }
+
+    dynamicGenerateCurveLine(coordinates) {
+
+        if(coordinates){
+
+            this.circleCoordinatesX = coordinates[0]
+            this.circleCoordinatesY = coordinates[1]
+    
+            if (this.toUpdateSourcePoint == false && this.storePoints.length == 2) {
+                //update target point [ [] , [to do] ]
+                this.storePoints.pop()
+                this.storePoints.push([this.circleCoordinatesX, this.circleCoordinatesY])
+            }
+    
+            if (this.toUpdateSourcePoint == true && this.storePoints.length == 2) {
+                //update source point [ [to do] , [] ]
+                this.storePoints.shift()
+                this.storePoints.unshift([this.circleCoordinatesX, this.circleCoordinatesY])
+            }
+        }
+       
+        let p = this.calculateCurvePointInterpolation(this.storePoints)
+        this.generateCurveLine(p)
+    }
+
 }

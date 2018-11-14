@@ -52,6 +52,11 @@ export default class BlueComponent {
 
         return {'x':this.x,'y':this.y, 'dx':this.dx, 'dy':this.dy}
     }
+    resetDeltaPos(){
+
+        this.dx = 0
+        this.dy = 0
+    }
     addPort(type, port){
 
         if(type == 'in'){
