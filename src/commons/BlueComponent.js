@@ -57,6 +57,14 @@ export default class BlueComponent {
         this.dx = 0
         this.dy = 0
     }
+    setFieldName(name){
+
+        if(this.outPorts.length == 1){
+            console.log(name)
+            this.outPorts[0].name = name
+            this.outPorts[0].dimension_type = 'quantitative'
+        }
+    }
     addPort(type, port){
 
         if(type == 'in'){
@@ -122,8 +130,8 @@ export default class BlueComponent {
             return d.x
         })
         .attr('cy', function(d,i){
-            d.y = that.height * 0.2 + (i+1) * 30
-            return that.height * 0.2 + (i+1) * 30
+            d.y = 30 + (i+1) * 30
+            return d.y
         })
         .attr('r', 6)
 
@@ -162,7 +170,7 @@ export default class BlueComponent {
             return d.x 
         })
         .attr('cy', function(d,i){
-            d.y = that.height * 0.2 + (i+1) * 30
+            d.y = 30 + (i+1) * 30
             return d.y
         })
         .attr('r', 6)
@@ -177,7 +185,7 @@ export default class BlueComponent {
         .attr('alignment-baseline', 'central')
         .attr('x', this.width - 30)
         .attr('y', function(d,i){
-            return that.height * 0.2 + (i+1) * 30
+            return 30 + (i+1) * 30
         })
         .attr('fill','white')
         .text(function(d){

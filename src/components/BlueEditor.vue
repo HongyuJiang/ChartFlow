@@ -91,6 +91,7 @@ import vegaEmbed from "vega-embed";
 import config from "../assets/config.json";
 import $ from "jquery";
 import dataHelper from "../Helper/dataHelper";
+import caculator_modules from "../Helper/caculator_modules";
 import BlueComponent from "../commons/BlueComponent";
 import * as d3 from "d3";
 import blueComponentTypes from "../assets/blueComponentTypes.json";
@@ -122,7 +123,8 @@ export default {
       connections: [],
       mouseAction: "",
       drawingLine: "",
-      vegaObject:""
+      vegaObject:"",
+      contextData:""
     };
   },
   methods: {
@@ -155,6 +157,15 @@ export default {
       let _com = new BlueComponent(this.container, properties);
       this.addClickEvent2Circle(_com);
       this.blueComponents.push(_com);
+    },
+    getComponentByName(name){
+      for(let i=0;i<this.blueComponents.length;i++){
+
+        if(name == this.blueComponents[i].name){
+
+          return this.blueComponents[i]
+        }
+      }
     },
     addClickEvent2Circle(com) {
       let that = this;
@@ -247,6 +258,48 @@ export default {
         this.blueComponents.push(_com);
       }
     },
+    setVegaConfig(source, target){
+
+      let that = this
+
+      if (source.attr == "field" && target.attr == "encoding") {
+        let meta = { 
+          name: source.name, 
+          key: target.name, 
+          type: source.dimension_type 
+        };
+
+      
+        let maker = that.modelConfig[target.parent].maker
+
+        //console.log(target.parent, that.modelConfig[target.parent])
+
+        that.vegaObject.setMark(maker)
+
+        that.vegaObject.setEncoding(meta);
+      }
+
+      if(source.attr == 'field' && target.attr == "operator"){
+
+          caculator_modules.setOperator(source.name)
+          
+          if(caculator_modules.operatorsSetted()){
+
+            let result = caculator_modules.sum(that.vegaObject.getData())
+
+            let newData = result.data, newName = result.name
+
+            that.vegaObject.setData(newData)
+
+            caculator_modules.resetOperators()
+
+            let _com = that.getComponentByName(target.parent)
+
+            _com.setFieldName(newName)
+          }
+      }
+    },
+
     connectionParse(connect) {
 
       let that = this
@@ -256,21 +309,26 @@ export default {
       let source = connect.source;
       let target = connect.target;
 
-      if(target.parent == 'Barchart') this.vegaObject.setMark("bar");
-      if(target.parent == 'Linechart') this.vegaObject.setMark("line");
-      if(target.parent == 'Scatterplot') this.vegaObject.setMark("point");
+    
+      let dataNameDict = {}
+      that.dataList.forEach(function(d){
 
-      //console.log(source, target);
+        dataNameDict[d.name] = 1
+      })
 
-      if (source.attr == "field" && target.attr == "encoding") {
-        let meta = { name: source.name, key: target.name, type: source.dimension_type };
+      if(source.parent in dataNameDict && source.parent != this.contextData){
 
-        this.vegaObject.setEncoding(meta);
+        this.contextData = source.parent
 
         dataHelper.getDataDetail(source.parent).then(function(response) {
 
-          that.vegaObject.setData(response.data.data);
+          that.vegaObject.setData(response.data.data.values);
+          that.setVegaConfig(source, target)
         });
+      }
+      else{
+
+        that.setVegaConfig(source, target)
       }
 
       let result = this.vegaObject.getOutputForced();
@@ -318,8 +376,6 @@ export default {
               source: curVal[tailNo].sourcePort,
               target: curVal[tailNo].targetPort
             });
-
-            console.log('connection update')
 
             this.connectionParse({
               source: curVal[tailNo].sourcePort,

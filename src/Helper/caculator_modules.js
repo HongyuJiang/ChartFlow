@@ -1,27 +1,38 @@
 export default class caculator_modules {
-    static add(data, dimensions) {
+
+    static setOperator(dimension){
+
+        if(this.dimensionA == undefined)
+            this.dimensionA = dimension
+        else
+            this.dimensionB = dimension
+    }
+    static resetOperators(){
+
+        this.dimensionA = undefined
+        this.dimensionB = undefined
+    }
+    static operatorsSetted(){
+
+        if(this.dimensionA != undefined && this.dimensionB != undefined){
+
+            return true
+        }
+        return false
+    }
+    static sum(data) {
 
         let name = 'sum_'
+        let that = this
 
-        for(i=0;i<dimensions.length;i++){
-
-            name += dimensions[0]
-        }
+        name = name + this.dimensionA + '_' + this.dimensionB
 
         data.forEach(function(d){
 
-            let sum = 0
-
-            for(i=0;i<dimensions.length;i++){
-
-                dim = dimensions[i]
-                sum +=  d[dim]
-            }
-
-            d[name] = sum
+            d[name] = parseFloat(d[that.dimensionA]) + parseFloat(d[that.dimensionB])
         })
 
-        return data
+        return {'data':data,'name':name}
     }
     static multiple() {
 

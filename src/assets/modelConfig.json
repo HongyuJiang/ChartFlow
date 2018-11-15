@@ -5,7 +5,7 @@
         "inPorts": [
             {"name":"x","text":"X","attr":"encoding","type":"in"},
             {"name":"y","text":"Y","attr":"encoding","type":"in"},
-            {"name":"fill","text":"Fill","attr":"color","type":"in"}
+            {"name":"fill","text":"Fill","attr":"encoding","type":"in"}
         ],
         "outPorts": [
 
@@ -18,7 +18,7 @@
         "inPorts": [
             {"name":"x","text":"X","attr":"encoding","type":"in"},
             {"name":"y","text":"Y","attr":"encoding","type":"in"},
-            {"name":"stroke","text":"Stroke","attr":"color","type":"in"}
+            {"name":"stroke","text":"Stroke","attr":"encoding","type":"in"}
         ],
         "outPorts": [
 
@@ -31,7 +31,7 @@
         "inPorts": [
             {"name":"x","text":"X","attr":"encoding","type":"in"},
             {"name":"y","text":"Y","attr":"encoding","type":"in"},
-            {"name":"fill","text":"Fill","attr":"color","type":"in"},
+            {"name":"fill","text":"Fill","attr":"encoding","type":"in"},
             {"name":"size","text":"Size","attr":"encoding","type":"in"}
         ],
         "outPorts": [
@@ -43,21 +43,21 @@
     "Color":{
 
         "inPorts": [
-            {"name":"In","text":"In","attr":"necessary" ,"type":"in"}
+            {"name":"In","text":"In","attr":"field" ,"type":"in"}
         ],
         "outPorts": [
-            {"name":"Out","text":"Out","attr":"dimension","type":"out"}
+            {"name":"Out","text":"Out","attr":"field","type":"out"}
         ],
         "type":"Operator"
     },
     "Sum":{
 
         "inPorts": [
-            {"name":"Num A","text":"Num A","attr":"necessary","type":"in"},
-            {"name":"Num B","text":"Num B","attr":"necessary","type":"in"}
+            {"name":"Num A","text":"Num A","attr":"operator","type":"in"},
+            {"name":"Num B","text":"Num B","attr":"operator","type":"in"}
         ],
         "outPorts": [
-            {"name":"Sum","text":"Sum","attr":"dimension","type":"out"}
+            {"name":"Sum","text":"Sum","attr":"field","type":"out"}
         ],
         "type":"Caculator"
     },

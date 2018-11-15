@@ -15,9 +15,15 @@ export default class VegaModel {
         }
    
     }
+    getData(){
+
+        return this.data['data']['values']
+    }
     setData(values){
 
-        this.data['data'] = values
+        this.data['data'] = {}
+
+        this.data['data']['values'] = values
 
     }
     setEncoding(rule){
