@@ -84,207 +84,235 @@ import config from "../assets/config.json";
 import $ from "jquery";
 import dataHelper from "../Helper/dataHelper";
 import BlueComponent from "../commons/BlueComponent";
-import * as d3 from 'd3'
+import * as d3 from "d3";
 import blueComponentTypes from "../assets/blueComponentTypes.json";
 import modelConfig from "../assets/modelConfig.json";
 import BlueprintLine from "../commons/BlueprintLine";
-
+import VegaModel from "../commons/vegaModel";
 
 export default {
   name: "blue-editor",
   data() {
     return {
       active: false,
-      indexOfSelectedData:0,
+      indexOfSelectedData: 0,
       globalchartIndex: 0,
       dataList: [],
-      componentTypes:blueComponentTypes,
-      container:'',
-      colors:{'Data':'#233D4D', 'Chart':'#de3e3e', 'Caculator':'#24B473', 'Operator':'rgb(136, 48, 160)'},
+      componentTypes: blueComponentTypes,
+      container: "",
+      colors: {
+        Data: "#233D4D",
+        Chart: "#de3e3e",
+        Caculator: "#24B473",
+        Operator: "rgb(136, 48, 160)"
+      },
       modelConfig: modelConfig,
-      selectedData:{},
-      dataComponent:{},
-      blueComponents:[],
-      blueLines:[],
-      connections:[],
-      mouseAction:'',
-      drawingLine:''
-
+      selectedData: {},
+      dataComponent: {},
+      blueComponents: [],
+      blueLines: [],
+      connections: [],
+      mouseAction: "",
+      drawingLine: "",
+      vegaObject:""
     };
   },
   methods: {
     chartInit(container, props) {
-      let that = this
+      let that = this;
 
       for (let key in props) {
         this.data[key] = props[key];
       }
 
       this.chartResize(window.innerWidth * 0.7, window.innerHeight * 0.7);
-      this.container = d3.select('#editorborad');
-     
+      this.container = d3.select("#editorborad");
     },
-   
+
     chartResize(innerWidth, innerHeight) {
       let height = innerHeight > innerWidth * 2 ? innerWidth * 2 : innerHeight;
       let width = innerWidth;
       this.width = width;
       this.height = height;
 
-      d3.select('#editorborad').attr('width', this.width).attr('height', this.height)
-
+      d3.select("#editorborad")
+        .attr("width", this.width)
+        .attr("height", this.height);
     },
-    createNewComponent(group, name){
+    createNewComponent(group, name) {
+      let properties = this.modelConfig[name];
+      properties["fill"] = this.colors[group];
+      properties["name"] = name;
 
-      let properties = this.modelConfig[name]
-      properties['fill'] = this.colors[group]
-      properties['name'] = name
-
-      let _com = new BlueComponent(this.container, properties)
-      this.addClickEvent2Circle(_com)
-      this.blueComponents.push(_com)
+      let _com = new BlueComponent(this.container, properties);
+      this.addClickEvent2Circle(_com);
+      this.blueComponents.push(_com);
     },
-    addClickEvent2Circle(com){
+    addClickEvent2Circle(com) {
+      let that = this;
+
+      this.container.on("mousemove", function(d) {
+        if (
+          that.mouseAction == "drawing_line" &&
+          that.drawingLine.targetPort == ""
+        ) {
+          let coordinates = d3.mouse(this);
+          that.drawingLine.dynamicGenerateCurveLine(coordinates);
+          that.drawingLine.findNearestPoint(coordinates);
+        }
+      });
+
+      com.getAllCircles().on("click", function(d) {
+        let x = d.parentX + d.x;
+        let y = d.parentY + d.y;
+
+        let line = (that.drawingLine = new BlueprintLine(
+          that.container,
+          [x, y],
+          d
+        ));
+        that.blueLines.push(line);
+
+        that.mouseAction = "drawing_line";
+
+        let allPorts = [];
+
+        that.blueComponents.forEach(function(component) {
+          let ports = component.getAllPorts();
+          if (d.type == "in") {
+            ports["outPorts"].forEach(function(d) {
+              allPorts.push(d);
+            });
+          } else {
+            ports["inPorts"].forEach(function(d) {
+              allPorts.push(d);
+            });
+          }
+        });
+        line.setExstingPorts(allPorts);
+      });
+    },
+    dimensionSelected(source, dim) {
+      dim.checked = !dim.checked;
+
+      if (dim.checked == true) dim.color = "primary";
+      else dim.color = "#333";
+
+      //forced update datalist to re-rendering
+      let origin = this.dataList;
+      this.dataList = [];
+      this.dataList = origin;
+
+      if (this.selectedData[source] != undefined) {
+        if (this.selectedData[source][dim.name] != undefined) {
+          this.selectedData[source][dim.name] = "0";
+        } else {
+          this.selectedData[source][dim.name] = "1";
+          this.dataComponent[source].addPort("out", {
+            name: dim.name,
+            text: dim.name,
+            type: "out",
+            attr: "field"
+          });
+          this.addClickEvent2Circle(this.dataComponent[source]);
+        }
+      } else {
+        this.selectedData[source] = {};
+        this.selectedData[source][dim.name] = "1";
+
+        let properties = this.modelConfig["Table"];
+        properties["outPorts"] = [
+          { name: dim.name, text: dim.name, type: "out", attr: "field" }
+        ];
+        properties["name"] = source;
+        let _com = new BlueComponent(this.container, properties);
+        this.dataComponent[source] = _com;
+        this.addClickEvent2Circle(_com);
+        this.blueComponents.push(_com);
+      }
+    },
+    connectionParse(connect) {
 
       let that = this
 
-      this.container.on('mousemove', function(d){
+      if(this.vegaObject == '') this.vegaObject = new VegaModel();
 
-        //console.log('move')
+      this.vegaObject.setTitle("Test");
 
-        if(that.mouseAction == 'drawing_line' && that.drawingLine.targetPort == ''){
+      let source = connect.source;
+      let target = connect.target;
 
-          let coordinates = d3.mouse(this)
-          that.drawingLine.dynamicGenerateCurveLine(coordinates)
-          that.drawingLine.findNearestPoint(coordinates)
-        }
+      if(target.parent == 'Barchart') this.vegaObject.setMark("bar");
+      if(target.parent == 'Linechart') this.vegaObject.setMark("line");
 
-      })
+      console.log(source, target);
 
-      com.getAllCircles().on('click', function(d){
+      if (source.attr == "field" && target.attr == "encoding") {
+        let meta = { name: source.name, key: target.name, type: 'quantitative' };
 
-        console.log('click')
+        this.vegaObject.setEncoding(meta);
 
-        let x = d.parentX + d.x
-        let y = d.parentY + d.y
+        dataHelper.getDataDetail(source.parent).then(function(response) {
 
-        let line = that.drawingLine = new BlueprintLine(that.container, [x, y], d)
-        that.blueLines.push(line)
-
-        that.mouseAction = 'drawing_line'
-
-        let allPorts = []
-        
-        that.blueComponents.forEach(function(component){
-
-          let ports = component.getAllPorts()
-          if(d.type == 'in'){
-            ports['outPorts'].forEach(function(d){
-              allPorts.push(d)
-            })
-          }
-          else{
-            ports['inPorts'].forEach(function(d){
-              allPorts.push(d)
-            })
-          }
-        })
-        line.setExstingPorts(allPorts)
-          
-      })
-    },
-    dimensionSelected(source, dim){
-      dim.checked = !dim.checked;
-
-      if (dim.checked == true) dim.color = 'primary';
-      else dim.color = '#333';
-
-      //forced update datalist to re-rendering
-      let origin = this.dataList
-      this.dataList = []
-      this.dataList = origin
-
-      if(this.selectedData[source] != undefined){
-        if(this.selectedData[source][dim.name] != undefined){
-          this.selectedData[source][dim.name] = '0'
-        }
-        else{
-          this.selectedData[source][dim.name] = '1'
-          this.dataComponent[source].addPort('out', {'name': dim.name,'text': dim.name,'type':'out'})
-          this.addClickEvent2Circle(this.dataComponent[source])
-        }
-      }
-      else{
-        this.selectedData[source] = {}
-        this.selectedData[source][dim.name] = '1'
-
-        let properties = this.modelConfig['Table']
-        properties['outPorts'] = [{'name': dim.name,'text': dim.name,'type':'out'}]
-        properties['name'] = source
-        let _com = new BlueComponent(this.container, properties)
-        this.dataComponent[source] = _com
-        this.addClickEvent2Circle(_com)
-        this.blueComponents.push(_com)
+          that.vegaObject.setData(response.data.data);
+        });
       }
 
+      let result = this.vegaObject.getOutputForced();
+
+      console.log(result);
     }
   },
   watch: {
-
     blueComponents: {
+      handler(curVal, oldVal) {
+        if (curVal.length == oldVal.length) {
+          for (let i = 0; i < curVal.length; i++) {
+            let curEle = curVal[i];
+            let preEle = oldVal[i];
 
-      handler(curVal, oldVal){
+            let curPos = curEle.getPos();
+            let prePos = preEle.getPos();
 
-        if(curVal.length == oldVal.length){
+            this.blueLines.forEach(function(line) {
+              line.parentPosUpdated(
+                curPos.dx,
+                curPos.dy,
+                curEle.inPorts,
+                curEle.outPorts
+              );
 
-          for(let i=0;i<curVal.length;i++){
-
-            let curEle = curVal[i]
-            let preEle = oldVal[i]
-
-            let curPos = curEle.getPos()
-            let prePos = preEle.getPos()
-
-            this.blueLines.forEach(function(line){
-
-              line.parentPosUpdated(curPos.dx, curPos.dy, curEle.inPorts, curEle.outPorts)
-
-              curEle.resetDeltaPos()
-              preEle.resetDeltaPos()
-            })
-          
+              curEle.resetDeltaPos();
+              preEle.resetDeltaPos();
+            });
           }
         }
-
       },
       deep: true
     },
     blueLines: {
+      handler(curVal, oldVal) {
+        if (this.connections.length < curVal.length) {
+          for (let i = 0; i < curVal.length; i++) {
+            if (curVal[i].targetPort != "") {
+              this.connections.push({
+                source: curVal[i].sourcePort,
+                target: curVal[i].targetPort
+              });
 
-      handler(curVal, oldVal){
-
-        if(this.connections.length < curVal.length){
-          
-          for(let i=0;i<curVal.length;i++){
-
-            if(curVal[i].targetPort != ''){
-
-              this.connections.push({'source':curVal[i].sourcePort, 'target':curVal[i].targetPort})
-
-              //console.log(this.connections)
+              this.connectionParse({
+                source: curVal[i].sourcePort,
+                target: curVal[i].targetPort
+              });
             }
           }
         }
-
-
       },
       deep: true
-    },
-    
+    }
   },
   mounted() {
-
-    let that = this
+    let that = this;
     this.chartInit("#preview");
 
     window.addEventListener("resize", () => {
@@ -293,19 +321,18 @@ export default {
 
     dataHelper.getDataList().then(response => {
       this.dataList = response.data;
-      this.dataList.forEach(function(data){
-        data.dimensions.forEach(function(d){
-            d['checked'] = false;
-        })
-      })
-
+      this.dataList.forEach(function(data) {
+        data.dimensions.forEach(function(d) {
+          d["checked"] = false;
+        });
+      });
     });
 
-    setInterval(function(){
-      that.blueLines.forEach(function(line){
-        line.animate()
-      })
-    },20)
+    setInterval(function() {
+      that.blueLines.forEach(function(line) {
+        line.animate();
+      });
+    }, 20);
   }
 };
 </script>

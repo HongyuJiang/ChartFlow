@@ -137,16 +137,14 @@ export default class BlueComponent {
         .attr("text-anchor", "start")
         .attr('alignment-baseline', 'central')
         .attr('x', function(d){
-            d.x = 30
             return 30
         })
         .attr('y', function(d,i){
-            d.y = that.height * 0.2 + (i+1) * 30
             return d.y 
         })
         .attr('fill','white')
         .text(function(d){
-            return d.name
+            return d.text
         })
     }
     drawOutPorts(){
@@ -183,7 +181,7 @@ export default class BlueComponent {
         })
         .attr('fill','white')
         .text(function(d){
-            return d.name
+            return d.text
         })
     }
     drawTitle(){

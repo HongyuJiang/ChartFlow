@@ -19,19 +19,12 @@ export default class BlueprintLine {
         this.existingPort = []
         this.toUpdateSourcePoint = false // false -> update target point / true -> update source point
         this.count = 10000
-        this.animateSpeed = 5
+        this.animateSpeed = 10
         this.coverLine = ''
         this.baseLine = ''
 
         this.pathCount++
-        /*this.container.on('mousemove.circle', function (d) {
-
-            //监听鼠标移动更新计算预览点 生成预览曲线
-            let coordinates = d3.mouse(this)
-            that.dynamicGenerateCurveLine(coordinates)
-            that.findNearestPoint(coordinates)
-        })*/
-
+    
     }
     parentPosUpdated(dx, dy, inPorts, outPorts) {
 
@@ -91,8 +84,6 @@ export default class BlueprintLine {
 
             if (nearPoints[0] != undefined && nearPoints[0] != null) {
 
-                console.log(that.storePoints)
-
                 that.container.on('mousemove.circle', null)
               
                 that.targetPort = nearPoints[0].port
@@ -100,12 +91,9 @@ export default class BlueprintLine {
 
                 that.generateAnimateCoverCurveLine()
                 that.dynamicGenerateCurveLine()
-               
-                //that.updateCoverLine()
+            
                 that.isWaitPath == false
                 
-                
-
             }
 
         }
@@ -174,7 +162,7 @@ export default class BlueprintLine {
             this.baseLine = this.container.append('path')
                 .attr('d', pathData)
                 .style('fill', 'none')
-                .style('stroke', '#999')
+                .style('stroke', '#ccc')
                 .attr('stroke-width', curveWidth)
         } 
         else {
@@ -191,8 +179,6 @@ export default class BlueprintLine {
         let lineGenerator = d3.line().curve(d3.curveBasis),
             pathData = lineGenerator(points);
 
-        console.log(this.coverLine)
-
         if(this.coverLine != ''){
 
             this.coverLine.attr('d', pathData)
@@ -206,7 +192,7 @@ export default class BlueprintLine {
         let points = this.calculateCurvePointInterpolation(this.storePoints)
         let lineGenerator = d3.line().curve(d3.curveBasis),
             pathData = lineGenerator(points),
-            curveWidth = '2px',
+            curveWidth = '3px',
             totalLength = 0
 
         //生成渐变
@@ -220,11 +206,15 @@ export default class BlueprintLine {
 
         linearGradient.append("stop")
             .attr("offset", "0%")
-            .style("stop-color", 'blue');
+            .style("stop-color", '#12D235');
+
+        linearGradient.append("stop")
+            .attr("offset", "50%")
+            .style("stop-color", '#12D2FF');
 
         linearGradient.append("stop")
             .attr("offset", "100%")
-            .style("stop-color", 'green');
+            .style("stop-color", '#1240FF');
 
         //绘制cover曲线
         this.coverLine = this.container.append('path')
