@@ -1,9 +1,19 @@
 export default class VegaModel {
 
-    constructor() {
+    constructor(height, width, name) {
 
         this.data = {}
 
+        this.data["width"] = width;
+        this.data["height"] = height;
+      
+        this['data'].title = {
+
+            "text": name,
+            "anchor": "middle",
+            "fontSize": 20
+        }
+   
     }
     setData(values){
 
@@ -12,27 +22,18 @@ export default class VegaModel {
     }
     setEncoding(rule){
 
-        if(this['data']['Encoding'] == undefined){
+        if(this['data']['encoding'] == undefined){
 
-            this['data'].Encoding = []
+            this['data'].encoding = []
         }
 
         let meta = {}
 
-        meta[rule.key] = rule.name
+        meta['field'] = rule.name
 
         meta['type'] = rule.type
 
-        this['data'].Encoding.push(meta)
-    }
-    setTitle(title){
-
-        this['data'].title = {
-
-            "text": title,
-            "anchor": "middle",
-            "fontSize": 20
-        }
+        this['data'].encoding[rule.key] = meta
     }
     setDescription(text){
 
@@ -49,7 +50,7 @@ export default class VegaModel {
 
             if(this.mark != undefined){
 
-                if(this['data']['Encoding'] != undefined){
+                if(this['data']['encoding'] != undefined){
 
                     return this.data
                 }

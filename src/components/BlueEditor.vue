@@ -22,7 +22,7 @@
       </vs-navbar-item>
     </vs-navbar>
   
-     <vs-row vs-h="8">
+     <vs-row vs-h="6">
 
         <vs-col id='data_list_container' vs-type="flex" vs-justify="left" vs-align="top" vs-w="2" style="max-height:700px;overflow-y:scroll">
              <div id='data_list'>
@@ -67,6 +67,14 @@
               </vs-collapse >
             
             </div>
+        </vs-col>
+    </vs-row>
+
+    <vs-row vs-h="4">
+     <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="12">
+             <div id='canvas'>
+          
+             </div>
         </vs-col>
     </vs-row>
 
@@ -125,7 +133,7 @@ export default {
         this.data[key] = props[key];
       }
 
-      this.chartResize(window.innerWidth * 0.7, window.innerHeight * 0.7);
+      this.chartResize(window.innerWidth * 0.7, window.innerHeight * 0.5);
       this.container = d3.select("#editorborad");
     },
 
@@ -211,6 +219,7 @@ export default {
           this.dataComponent[source].addPort("out", {
             name: dim.name,
             text: dim.name,
+            dimension_type: dim.type,
             type: "out",
             attr: "field"
           });
@@ -221,8 +230,15 @@ export default {
         this.selectedData[source][dim.name] = "1";
 
         let properties = this.modelConfig["Table"];
-        properties["outPorts"] = [
-          { name: dim.name, text: dim.name, type: "out", attr: "field" }
+        properties["outPorts"] = 
+        [
+          { 
+            name: dim.name, 
+            text: dim.name, 
+            dimension_type: dim.type,
+            type: "out", 
+            attr: "field" 
+          }
         ];
         properties["name"] = source;
         let _com = new BlueComponent(this.container, properties);
@@ -235,20 +251,19 @@ export default {
 
       let that = this
 
-      if(this.vegaObject == '') this.vegaObject = new VegaModel();
-
-      this.vegaObject.setTitle("Test");
+      if(this.vegaObject == '') this.vegaObject = new VegaModel(300,1000,'Test');
 
       let source = connect.source;
       let target = connect.target;
 
       if(target.parent == 'Barchart') this.vegaObject.setMark("bar");
       if(target.parent == 'Linechart') this.vegaObject.setMark("line");
+      if(target.parent == 'Scatterplot') this.vegaObject.setMark("point");
 
-      console.log(source, target);
+      //console.log(source, target);
 
       if (source.attr == "field" && target.attr == "encoding") {
-        let meta = { name: source.name, key: target.name, type: 'quantitative' };
+        let meta = { name: source.name, key: target.name, type: source.dimension_type };
 
         this.vegaObject.setEncoding(meta);
 
@@ -259,6 +274,8 @@ export default {
       }
 
       let result = this.vegaObject.getOutputForced();
+
+      vegaEmbed("#canvas", result);
 
       console.log(result);
     }
@@ -292,19 +309,22 @@ export default {
     },
     blueLines: {
       handler(curVal, oldVal) {
-        if (this.connections.length < curVal.length) {
-          for (let i = 0; i < curVal.length; i++) {
-            if (curVal[i].targetPort != "") {
-              this.connections.push({
-                source: curVal[i].sourcePort,
-                target: curVal[i].targetPort
-              });
+        if (this.connections.length < curVal.length) { 
 
-              this.connectionParse({
-                source: curVal[i].sourcePort,
-                target: curVal[i].targetPort
-              });
-            }
+          let tailNo = curVal.length - 1
+          if (curVal[tailNo].targetPort != "") {
+
+            this.connections.push({
+              source: curVal[tailNo].sourcePort,
+              target: curVal[tailNo].targetPort
+            });
+
+            console.log('connection update')
+
+            this.connectionParse({
+              source: curVal[tailNo].sourcePort,
+              target: curVal[tailNo].targetPort
+            });
           }
         }
       },
@@ -316,7 +336,7 @@ export default {
     this.chartInit("#preview");
 
     window.addEventListener("resize", () => {
-      this.chartResize(window.innerWidth * 0.7, window.innerHeight * 0.7);
+      this.chartResize(window.innerWidth * 0.7, window.innerHeight * 0.5);
     });
 
     dataHelper.getDataList().then(response => {
