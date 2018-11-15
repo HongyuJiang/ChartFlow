@@ -6,7 +6,9 @@
 
 ![Teaser](preview.png)
 
-> A visualization building tool base on Vega-lite
+> A visualization building tool base on Vega-lite and blueprint
+
+![Teaser](demo.gif)
 
 ## Build Setup
 ``` bash
