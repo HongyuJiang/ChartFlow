@@ -295,6 +295,12 @@ export default {
 
             }
 
+            if(target.parent == 'Reduce'){
+
+              result = caculator_modules.reduce(that.vegaObject.getData())
+
+            }
+
             let newData = result.data, newName = result.name
 
             that.vegaObject.setData(newData)

@@ -34,6 +34,20 @@ export default class caculator_modules {
 
         return {'data':data,'name':name}
     }
+    static reduce(data) {
+
+        let name = 'reduce_'
+        let that = this
+
+        name = name + this.dimensionA + '_' + this.dimensionB
+
+        data.forEach(function(d){
+
+            d[name] = parseFloat(d[that.dimensionA]) - parseFloat(d[that.dimensionB])
+        })
+
+        return {'data':data,'name':name}
+    }
     static multiple() {
 
         let name = 'multi_'

@@ -91,6 +91,17 @@
         ],
         "type":"Caculator"
     },
+    "Reduce":{
+
+        "inPorts": [
+            {"name":"Num A","text":"Num A","attr":"operator","type":"in"},
+            {"name":"Num B","text":"Num B","attr":"operator","type":"in"}
+        ],
+        "outPorts": [
+            {"name":"Reduce","text":"Reduce","attr":"field","type":"out"}
+        ],
+        "type":"Caculator"
+    },
     "Table":{
 
         "inPorts": [],
