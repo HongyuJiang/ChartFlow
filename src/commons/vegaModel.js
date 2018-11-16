@@ -85,6 +85,10 @@ export default class VegaModel {
 
             let layer = this.layers[name]
 
+            layer['width'] = this.data["width"]
+
+            layer['height'] = this.data["height"]
+
             this.data.spec.layer.push(layer)
 
         }

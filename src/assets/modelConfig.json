@@ -5,7 +5,7 @@
         "inPorts": [
             {"name":"x","text":"X","attr":"encoding","type":"in"},
             {"name":"y","text":"Y","attr":"encoding","type":"in"},
-            {"name":"fill","text":"Fill","attr":"encoding","type":"in"},
+            {"name":"color","text":"Fill","attr":"encoding","type":"in"},
             {"name":"row","text":"Row","attr":"encoding","type":"in"}
         ],
         "outPorts": [

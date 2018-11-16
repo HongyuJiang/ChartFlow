@@ -36,10 +36,12 @@
                   <vs-divider></vs-divider>
             
                   <div :key="index" v-for="(dim, index) in data.dimensions">
-                    <vs-list-item :title="dim.name" :subtitle="dim.type">
-                      <template>
-                        <vs-avatar :color="dim.color" :text="dim.type[0].toLocaleUpperCase()" v-on:click="dimensionSelected(data.name, dim)"/>
-                      </template>
+                    <vs-list-item>
+                      <h3 style="float:left">{{dim.name}}</h3>
+                       <vs-select style="float:left;width:170px" v-model="dim.type">
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in dataTypes" />
+                      </vs-select>
+                        <vs-avatar style="float:right" :color="dim.color" text="Add" v-on:click="dimensionSelected(data.name, dim)"/>
                     </vs-list-item>
                   </div>
               </vs-list>
@@ -124,7 +126,8 @@ export default {
       mouseAction: "",
       drawingLine: "",
       vegaObject:"",
-      contextData:""
+      contextData:"",
+      dataTypes:config.typesPrefab
     };
   },
   methods: {
@@ -342,6 +345,10 @@ export default {
       vegaEmbed("#canvas", result);
 
       console.log(result);
+    },
+    changeDataType(name, dim){
+
+      console.log(name, dim)
     }
   },
   watch: {
