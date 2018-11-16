@@ -6,6 +6,8 @@ export default class VegaModel {
 
         this.data["width"] = width;
         this.data["height"] = height;
+        this.data["spec"] = {'layer':[]};
+        this.data["repeat"] = {};
       
         this['data'].title = {
 
@@ -13,6 +15,8 @@ export default class VegaModel {
             "anchor": "middle",
             "fontSize": 20
         }
+
+        this.layers = {}
    
     }
     getData(){
@@ -26,29 +30,34 @@ export default class VegaModel {
         this.data['data']['values'] = values
 
     }
-    setEncoding(rule){
+    setEncoding(parent, rule){
 
-        if(this['data']['encoding'] == undefined){
+        if(parent in this.layers){
 
-            this['data'].encoding = []
+            let meta = {'field': rule.name, 'type':rule.type}
+
+            this.layers[parent].encoding[rule.key] = meta
         }
+        else{
 
-        let meta = {}
+            this.layers[parent] = {'encoding':{}}
+                
+            let meta = {'field': rule.name, 'type':rule.type}
 
-        meta['field'] = rule.name
-
-        meta['type'] = rule.type
-
-        this['data'].encoding[rule.key] = meta
+            this.layers[parent].encoding[rule.key] = meta
+        
+        }
+        
     }
     setDescription(text){
 
         this['data'].description = text
     }  
 
-    setMark(mark){
+    setMark(parent, mark){
 
-        this['data'].mark = mark
+        this.layers[parent].mark = mark
+
     }
     getOutput(){
 
@@ -67,6 +76,18 @@ export default class VegaModel {
     }
 
     getOutputForced(){
+
+        this.data.spec.layer = []
+
+        for(name in this.layers){
+
+            console.log(name)
+
+            let layer = this.layers[name]
+
+            this.data.spec.layer.push(layer)
+
+        }
 
         return this.data
     }

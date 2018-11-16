@@ -263,21 +263,20 @@ export default {
       let that = this
 
       if (source.attr == "field" && target.attr == "encoding") {
+        
         let meta = { 
           name: source.name, 
           key: target.name, 
           type: source.dimension_type 
         };
 
-      
         let maker = that.modelConfig[target.parent].maker
 
-        //console.log(target.parent, that.modelConfig[target.parent])
+        that.vegaObject.setEncoding(target.parent, meta);
+        that.vegaObject.setMark(target.parent, maker);
+        
 
-        that.vegaObject.setMark(maker)
-
-        that.vegaObject.setEncoding(meta);
-      }
+      } 
 
       if(source.attr == 'field' && target.attr == "operator"){
 
@@ -285,7 +284,13 @@ export default {
           
           if(caculator_modules.operatorsSetted()){
 
-            let result = caculator_modules.sum(that.vegaObject.getData())
+            let result = {}
+
+            if(target.parent == 'Sum'){
+
+              result = caculator_modules.sum(that.vegaObject.getData())
+
+            }
 
             let newData = result.data, newName = result.name
 
@@ -296,6 +301,7 @@ export default {
             let _com = that.getComponentByName(target.parent)
 
             _com.setFieldName(newName)
+            
           }
       }
     },

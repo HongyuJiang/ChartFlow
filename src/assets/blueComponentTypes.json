@@ -5,7 +5,7 @@
     }, 
     { 
         "name": "Chart", 
-        "childrens": ["Barchart", "Linechart", "Scatterplot", "Boxplot"]
+        "childrens": ["Barchart", "Linechart", "Scatterplot", "Boxplot", "Stripplot"]
     }, 
     { 
         "name": "Caculator", 

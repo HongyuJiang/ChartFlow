@@ -5,7 +5,8 @@
         "inPorts": [
             {"name":"x","text":"X","attr":"encoding","type":"in"},
             {"name":"y","text":"Y","attr":"encoding","type":"in"},
-            {"name":"fill","text":"Fill","attr":"encoding","type":"in"}
+            {"name":"fill","text":"Fill","attr":"encoding","type":"in"},
+            {"name":"row","text":"Row","attr":"encoding","type":"in"}
         ],
         "outPorts": [
 
@@ -18,7 +19,8 @@
         "inPorts": [
             {"name":"x","text":"X","attr":"encoding","type":"in"},
             {"name":"y","text":"Y","attr":"encoding","type":"in"},
-            {"name":"stroke","text":"Stroke","attr":"encoding","type":"in"}
+            {"name":"stroke","text":"Stroke","attr":"encoding","type":"in"},
+            {"name":"row","text":"Row","attr":"encoding","type":"in"}
         ],
         "outPorts": [
 
@@ -39,6 +41,34 @@
         ],
         "type":"Chart",
         "maker": "point"
+    },
+    "Stripplot":{
+
+        "inPorts": [
+            {"name":"x","text":"X","attr":"encoding","type":"in"},
+            {"name":"y","text":"Y","attr":"encoding","type":"in"},
+            {"name":"stroke","text":"Stroke","attr":"encoding","type":"in"},
+            {"name":"row","text":"Row","attr":"encoding","type":"in"}
+        ],
+        "outPorts": [
+
+        ],
+        "type":"Chart",
+        "maker": "tick"
+    },
+    "Boxplot":{
+
+        "inPorts": [
+            {"name":"x","text":"X","attr":"encoding","type":"in"},
+            {"name":"y","text":"Y","attr":"encoding","type":"in"},
+            {"name":"stroke","text":"Stroke","attr":"encoding","type":"in"},
+            {"name":"row","text":"Row","attr":"encoding","type":"in"}
+        ],
+        "outPorts": [
+
+        ],
+        "type":"Chart",
+        "maker": "boxplot"
     },
     "Color":{
 

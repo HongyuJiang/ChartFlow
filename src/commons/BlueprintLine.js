@@ -32,21 +32,24 @@ export default class BlueprintLine {
         let outPortsNames = {}
 
         inPorts.forEach(function (port) {
-            inPortsNames[port.name] = 1
+            inPortsNames[port.parent + '_' + port.name] = 1
         })
 
         outPorts.forEach(function (port) {
-            outPortsNames[port.name] = 1
+            outPortsNames[port.parent + '_' + port.name] = 1
         })
 
-        if (this.sourcePort.name in inPortsNames || this.sourcePort.name in outPortsNames) {
+        let sourcePortKey = this.sourcePort.parent + '_' + this.sourcePort.name
+        let targetPortKey = this.targetPort.parent + '_' + this.targetPort.name
+
+        if (sourcePortKey in inPortsNames || sourcePortKey in outPortsNames) {
 
             this.storePoints[0][0] += dx
             this.storePoints[0][1] += dy
             this.dynamicGenerateCurveLine()
             this.updateCoverLine()
         }
-        else if (this.targetPort.name in outPortsNames || this.targetPort.name in inPortsNames) {
+        else if (targetPortKey in outPortsNames || targetPortKey in inPortsNames) {
 
             this.storePoints[1][0] += dx
             this.storePoints[1][1] += dy
