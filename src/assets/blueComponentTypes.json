@@ -12,7 +12,11 @@
         "childrens": ["Sum", "Reduce", "Multi"]
     },  
     { 
-        "name": "Operator", 
-        "childrens": ["Color", "Union", "Unique"]
+        "name": "Processer", 
+        "childrens": ["Filter", "Unique"]
+    },
+    { 
+        "name": "Connector", 
+        "childrens": ["Left Join", "Right Join", "Inner Join", "Outer Join"]
     }
 ]

@@ -5,8 +5,8 @@ export default class BlueComponent {
     constructor(canvas, options) {
         
         let that = this
-        this.fill = '#333'
-        this.stroke = '#999'
+        this.fill = '#F6BB42'
+        this.stroke = 'none'
         this.name = 'UNAMED'
         this.type = 'default'
         this.inPorts = [{'name':'Table','type':'in'}]
@@ -60,7 +60,6 @@ export default class BlueComponent {
     setFieldName(name){
 
         if(this.outPorts.length == 1){
-            console.log(name)
             this.outPorts[0].name = name
             this.outPorts[0].dimension_type = 'quantitative'
         }
@@ -123,14 +122,15 @@ export default class BlueComponent {
         .enter()
         .append('circle')
         .attr('class','port')
-        .attr('fill', '#339')
-        .attr('stroke', 'white')
+        .attr('fill', 'white')
+        .attr('stroke', 'black')
+        .attr('stroke-width', '2')
         .attr('cx', function(d){
             d.x = 20
             return d.x
         })
         .attr('cy', function(d,i){
-            d.y = 30 + (i+1) * 30
+            d.y = 20 + (i+1) * 30
             return d.y
         })
         .attr('r', 6)
@@ -151,6 +151,7 @@ export default class BlueComponent {
             return d.y 
         })
         .attr('fill','white')
+        .attr('font-size','14')
         .text(function(d){
             return d.text
         })
@@ -163,14 +164,15 @@ export default class BlueComponent {
         .enter()
         .append('circle')
         .attr('class','port')
-        .attr('fill', '#339')
-        .attr('stroke', 'white')
+        .attr('fill', 'white')
+        .attr('stroke', 'black')
+        .attr('stroke-width', '2')
         .attr('cx', function(d,i){
             d.x = that.width - 20
             return d.x 
         })
         .attr('cy', function(d,i){
-            d.y = 30 + (i+1) * 30
+            d.y = 20 + (i+1) * 30
             return d.y
         })
         .attr('r', 6)
@@ -185,9 +187,10 @@ export default class BlueComponent {
         .attr('alignment-baseline', 'central')
         .attr('x', this.width - 30)
         .attr('y', function(d,i){
-            return 30 + (i+1) * 30
+            return d.y
         })
         .attr('fill','white')
+        .attr('font-size','14')
         .text(function(d){
             return d.text
         })
@@ -207,7 +210,9 @@ export default class BlueComponent {
         .attr('y1', 30)
         .attr('x2', this.width)
         .attr('y2', 30)
-        .attr('stroke','white')
+        .attr('stroke','#666')
+        .attr('stroke-width','2')
+        .attr('font-size','14')
        
     }
     draw(){

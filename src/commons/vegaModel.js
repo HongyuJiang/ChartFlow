@@ -8,6 +8,7 @@ export default class VegaModel {
         this.data["height"] = height;
         this.data["spec"] = {'layer':[]};
         this.data["repeat"] = {};
+        this.data['background'] = '#202020'
       
         this['data'].title = {
 
@@ -56,7 +57,7 @@ export default class VegaModel {
 
     setMark(parent, mark){
 
-        this.layers[parent].mark = mark
+        this.layers[parent].mark = {'type':mark,'fill':'#1473e6'}
 
     }
     getOutput(){
@@ -80,8 +81,6 @@ export default class VegaModel {
         this.data.spec.layer = []
 
         for(name in this.layers){
-
-            console.log(name)
 
             let layer = this.layers[name]
 

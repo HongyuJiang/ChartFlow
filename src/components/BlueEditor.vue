@@ -2,22 +2,22 @@
 
 <div id="blue-editor">
 
-    <vs-navbar class="nabarx">
+    <vs-navbar class="nabarx" color='#666'>
       <vs-button class="nav_opener" type="flat" icon="menu"></vs-button>
 
-      <vs-navbar-title>
+      <vs-navbar-title style="color:white">
         OpenVIS 
       </vs-navbar-title>
 
       <vs-spacer></vs-spacer>
 
-      <vs-navbar-item index="0">
+      <vs-navbar-item index="0" style="color:white">
         <a href="#">Home</a>
-      </vs-navbar-item>
-      <vs-navbar-item index="1">
+      </vs-navbar-item> 
+      <vs-navbar-item index="1" style="color:white">
         <a href="#">News</a>
       </vs-navbar-item>
-      <vs-navbar-item index="2">
+      <vs-navbar-item index="2" style="color:white">
         <a href="#">Update</a>
       </vs-navbar-item>
     </vs-navbar>
@@ -28,11 +28,8 @@
              <div id='data_list'>
               <vs-list :key="index" v-for="(data, index) in dataList">
               
+                  <vs-button color="dark" type="line" :key="data.index" v-on:click="dataSelected(index)" icon="menu">{{data.name}}</vs-button>
               
-                  <vs-button v-if="index != indexOfSelectedData" color="dark" type="line" :key="data.index" v-on:click="dataSelected(index)" icon="menu">{{data.name}}</vs-button>
-              
-                  <vs-button v-if="index === indexOfSelectedData" color="dark" type="filled" :key="data.index" v-on:click="dataSelected(index)" icon="menu">{{data.name}}</vs-button>
-
                   <vs-divider></vs-divider>
             
                   <div :key="index" v-for="(dim, index) in data.dimensions">
@@ -57,7 +54,7 @@
 
               <vs-collapse accordion :key="index" v-for="(group, index) in componentTypes">
                 <vs-collapse-item>
-                  <div slot="header">
+                  <div slot="header" style="color:white; border-left:white solid 2px; padding-left:10px">
                     {{group.name}}
                   </div>
                   <vs-list :key="index" v-for="(meta, index) in group.childrens">
@@ -112,10 +109,12 @@ export default {
       componentTypes: blueComponentTypes,
       container: "",
       colors: {
-        Data: "#233D4D",
-        Chart: "#de3e3e",
-        Caculator: "#24B473",
-        Operator: "rgb(136, 48, 160)"
+        Data: "#F6BB42",
+        Chart: "#967ADC",
+        Caculator: "#37BC9B",
+        Processer: "#ffa824",
+        Connector: "#704cff",
+        
       },
       modelConfig: modelConfig,
       selectedData: {},
@@ -137,11 +136,50 @@ export default {
       for (let key in props) {
         this.data[key] = props[key];
       }
-
-      this.chartResize(window.innerWidth * 0.7, window.innerHeight * 0.5);
       this.container = d3.select("#editorborad");
+      this.container.append('g').attr('id','grid_layer')
+      this.chartResize(window.innerWidth * 0.65, window.innerHeight * 0.6);
+    
     },
+    drawGrids(){
 
+      let lineData = []
+
+      for(let i = 10;i<this.width;i+=20){
+
+          lineData.push({'x1':i,'y1':0,'x2':i,'y2':this.height})
+      }
+
+      for(let i = 10;i<this.height;i+=20){
+
+          lineData.push({'x1':0,'y1':i,'x2':this.width,'y2':i})
+      }
+
+      if(this.container != ''){
+
+        this.container.select('#grid_layer').selectAll('*')
+        .remove()
+
+        this.container.select('#grid_layer').selectAll('.grid_lines')
+        .data(lineData)
+        .enter()
+        .append('line')
+        .attr('x1', function(d){
+          return d.x1
+        })
+        .attr('x2', function(d){
+          return d.x2
+        })
+        .attr('y1', function(d){
+          return d.y1
+        })
+        .attr('y2', function(d){
+          return d.y2
+        })
+        .attr('stroke','#666')
+      }
+
+    },
     chartResize(innerWidth, innerHeight) {
       let height = innerHeight > innerWidth * 2 ? innerWidth * 2 : innerHeight;
       let width = innerWidth;
@@ -151,6 +189,8 @@ export default {
       d3.select("#editorborad")
         .attr("width", this.width)
         .attr("height", this.height);
+
+      this.drawGrids()
     },
     createNewComponent(group, name) {
       let properties = this.modelConfig[name];
@@ -319,7 +359,7 @@ export default {
 
       let that = this
 
-      if(this.vegaObject == '') this.vegaObject = new VegaModel(300,1000,'Test');
+      if(this.vegaObject == '') this.vegaObject = new VegaModel(300,this.width,'Test');
 
       let source = connect.source;
       let target = connect.target;
@@ -348,7 +388,7 @@ export default {
 
       let result = this.vegaObject.getOutputForced();
 
-      vegaEmbed("#canvas", result);
+      vegaEmbed("#canvas", result, {theme: 'dark'});
 
       console.log(result);
     },
@@ -411,7 +451,7 @@ export default {
     this.chartInit("#preview");
 
     window.addEventListener("resize", () => {
-      this.chartResize(window.innerWidth * 0.7, window.innerHeight * 0.5);
+      this.chartResize(window.innerWidth * 0.65, window.innerHeight * 0.6);
     });
 
     dataHelper.getDataList().then(response => {

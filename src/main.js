@@ -15,11 +15,11 @@ Vue.use(VueRouter)
 Vue.use(Vuesax, {
   theme:{
     colors:{
-      primary:'rgb(36, 33, 69)',
+      primary:'rgb(200, 200, 200)',
       success:'rgb(23, 201, 100)',
       danger:'rgb(242, 19, 93)',
       warning:'rgb(255, 130, 0)',
-      dark:'rgb(36, 33, 69)'
+      dark:'rgb(200, 200, 200)',
     }
   }
 })

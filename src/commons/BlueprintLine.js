@@ -156,7 +156,7 @@ export default class BlueprintLine {
 
         let lineGenerator = d3.line().curve(d3.curveBasis),
             pathData = lineGenerator(points),
-            curveWidth = '4px';
+            curveWidth = '3px';
 
         if (this.isWaitPath == false) {
 
@@ -165,7 +165,7 @@ export default class BlueprintLine {
             this.baseLine = this.container.append('path')
                 .attr('d', pathData)
                 .style('fill', 'none')
-                .style('stroke', '#ccc')
+                .style('stroke', '#aaa')
                 .attr('stroke-width', curveWidth)
         } 
         else {
