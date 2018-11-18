@@ -8,7 +8,7 @@
 
 > A visualization building tool base on Vega-lite and blueprint
 
-![Teaser](demo.gif)
+![Demo](demo.gif)
 
 ## Build Setup
 ``` bash
@@ -18,5 +18,7 @@ npm install
 # serve with hot reload at localhost:8080
 npm run dev
 ```
+
+©2018 ViS & VR Team, Southwest University of Science & Technology. All rights reserved. 
 
 Please feel free to contact me if you have any question.

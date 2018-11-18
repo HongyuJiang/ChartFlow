@@ -19,7 +19,7 @@ export default class BlueprintLine {
         this.existingPort = []
         this.toUpdateSourcePoint = false // false -> update target point / true -> update source point
         this.count = 10000
-        this.animateSpeed = 10
+        this.animateSpeed = 2
         this.coverLine = ''
         this.baseLine = ''
 
@@ -165,7 +165,7 @@ export default class BlueprintLine {
             this.baseLine = this.container.append('path')
                 .attr('d', pathData)
                 .style('fill', 'none')
-                .style('stroke', '#aaa')
+                .style('stroke', '#808080')
                 .attr('stroke-width', curveWidth)
         } 
         else {
@@ -209,15 +209,19 @@ export default class BlueprintLine {
 
         linearGradient.append("stop")
             .attr("offset", "0%")
-            .style("stop-color", '#12D235');
+            .style("stop-color", '#1473e6');
 
-        linearGradient.append("stop")
+       /* linearGradient.append("stop")
             .attr("offset", "50%")
             .style("stop-color", '#12D2FF');
 
         linearGradient.append("stop")
             .attr("offset", "100%")
-            .style("stop-color", '#1240FF');
+            .style("stop-color", '#1240FF');*/
+
+        linearGradient.append("stop")
+            .attr("offset", "100%") 
+            .style("stop-color", '#1473e6')
 
         //绘制cover曲线
         this.coverLine = this.container.append('path')
@@ -229,19 +233,16 @@ export default class BlueprintLine {
 
         //获取生成曲线长度并设定线段间隔为曲线长度
         totalLength = this.coverLine.node().getTotalLength()
-        this.coverLine.style('stroke-dasharray', totalLength + "," + totalLength)
+        this.coverLine.style('stroke-dasharray', totalLength/8 + "," + totalLength/8)
 
     }
 
     animate(){
-
         if(this.targetPort != ''){
-
             this.count = this.count - this.animateSpeed;
             d3.selectAll('.rgbLine')
                 .style('stroke-dashoffset', this.count)
         }
-       
     }
 
     generateEndPoints() {
