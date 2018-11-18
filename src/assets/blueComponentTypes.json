@@ -12,8 +12,8 @@
         "childrens": ["Sum", "Reduce", "Multi"]
     },  
     { 
-        "name": "Processer", 
-        "childrens": ["Filter", "Unique"]
+        "name": "Processor", 
+        "childrens": ["Filter", "Log"]
     },
     { 
         "name": "Connector", 

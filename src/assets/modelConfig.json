@@ -107,5 +107,25 @@
         "inPorts": [],
         "outPorts": [],
         "type":"Data"
+    },
+    "Filter":{
+
+        "inPorts": [
+            {"name":"dimension","text":"Dimension","attr":"processor","type":"in"}
+        ],
+        "outPorts": [
+            {"name":"output","text":"Output","attr":"field","type":"out"}
+        ],
+        "type":"Processor"
+    },
+    "Log":{
+
+        "inPorts": [
+            {"name":"dimension","text":"Dimension","attr":"processor","type":"in"}
+        ],
+        "outPorts": [
+            {"name":"output","text":"Output","attr":"field","type":"out"}
+        ],
+        "type":"Processor"
     }
 }

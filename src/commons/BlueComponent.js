@@ -9,8 +9,8 @@ export default class BlueComponent {
         this.stroke = 'none'
         this.name = 'UNAMED'
         this.type = 'default'
-        this.inPorts = [{'name':'Table','type':'in'}]
-        this.outPorts = [{'name':'Fieid1','type':'out'}, {'name':'Fieid2','type':'out'}]
+        this.inPorts = []
+        this.outPorts = []
         this.conenctions = []
         this.property = {}
         this.width = 180
@@ -60,11 +60,19 @@ export default class BlueComponent {
     setFieldName(name){
 
         if(this.outPorts.length == 1){
-            this.outPorts[0].name = name
+            this.outPorts[0].name = this.outPorts[0].name[0].toUpperCase() + 
+            this.outPorts[0].name.slice(1, this.outPorts[0].name.length)
+
+            console.log(this.outPorts[0].name)
+
             this.outPorts[0].dimension_type = 'quantitative'
         }
     }
     addPort(type, port){
+
+        port.text = port.text[0].toUpperCase() + port.text.slice(1, port.text.length)
+
+        console.log(port.text)
 
         if(type == 'in'){
             this.inPorts.push(port)
@@ -202,7 +210,7 @@ export default class BlueComponent {
         .attr('y', 20)
         .attr("text-anchor", "middle")
         .attr('fill','white')
-        .text(this.name)
+        .text(this.name.toUpperCase())
 
         this.container
         .append('line')

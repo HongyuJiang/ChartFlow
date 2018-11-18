@@ -2,7 +2,7 @@
 
 <div id="blue-editor">
 
-    <vs-navbar class="nabarx" color='#666'>
+    <vs-navbar class="nabarx" color='rgb(50, 60, 90)'>
       <vs-button class="nav_opener" type="flat" icon="menu"></vs-button>
 
       <vs-navbar-title style="color:white">
@@ -34,11 +34,11 @@
             
                   <div :key="index" v-for="(dim, index) in data.dimensions">
                     <vs-list-item>
-                      <h3 style="float:left">{{dim.name}}</h3>
+                      <h3 style="float:left;color:white">{{dim.name}}</h3>
                        <vs-select style="float:left;width:170px" v-model="dim.type">
                         <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in dataTypes" />
                       </vs-select>
-                        <vs-avatar style="float:right" :color="dim.color" text="Add" v-on:click="dimensionSelected(data.name, dim)"/>
+                        <vs-avatar style="float:right;margin:0px;margin-left:10px" :color="dim.color" text="Add" v-on:click="dimensionSelected(data.name, dim)"/>
                     </vs-list-item>
                   </div>
               </vs-list>
@@ -59,7 +59,7 @@
                   </div>
                   <vs-list :key="index" v-for="(meta, index) in group.childrens">
 
-                    <vs-button style="width:100%" color="rgb(134,4,98)" type="filled" :key="index" v-on:click="createNewComponent(group.name, meta)" icon="insert_chart">{{meta}}</vs-button>
+                    <vs-button style="width:80%; justify-content: left; margin-left:10%" color="rgb(134,4,98)" type="filled" :key="index" v-on:click="createNewComponent(group.name, meta)" icon="add_circle">{{meta}}</vs-button>
                     <vs-divider></vs-divider>
                   </vs-list>  
                 </vs-collapse-item>
@@ -91,6 +91,7 @@ import config from "../assets/config.json";
 import $ from "jquery";
 import dataHelper from "../Helper/dataHelper";
 import caculator_modules from "../Helper/caculator_modules";
+import processor_modules from "../Helper/processer_modules";
 import BlueComponent from "../commons/BlueComponent";
 import * as d3 from "d3";
 import blueComponentTypes from "../assets/blueComponentTypes.json";
@@ -257,8 +258,8 @@ export default {
     dimensionSelected(source, dim) {
       dim.checked = !dim.checked;
 
-      if (dim.checked == true) dim.color = "primary";
-      else dim.color = "#333";
+      if (dim.checked == true) dim.color = "#808080";
+      else dim.color = "#202020";
 
       //forced update datalist to re-rendering
       let origin = this.dataList;
@@ -331,27 +332,53 @@ export default {
 
             if(target.parent == 'Sum'){
 
-              result = caculator_modules.sum(that.vegaObject.getData())
+              result = caculator_modules.sum(this.vegaObject.getData())
 
             }
 
             if(target.parent == 'Reduce'){
 
-              result = caculator_modules.reduce(that.vegaObject.getData())
+              result = caculator_modules.reduce(this.vegaObject.getData())
 
             }
 
             let newData = result.data, newName = result.name
 
-            that.vegaObject.setData(newData)
+            this.vegaObject.setData(newData)
 
             caculator_modules.resetOperators()
 
-            let _com = that.getComponentByName(target.parent)
+            let _com = this.getComponentByName(target.parent)
 
             _com.setFieldName(newName)
             
           }
+      }
+
+      if(source.attr == 'field' && target.attr == 'processor'){
+
+          let sourcePortName = source.name
+
+          if(target.parent == 'Filter'){
+
+            let newData = caculator_modules.filter(10, this.vegaObject.getData(), sourcePortName, '>')
+
+            this.vegaObject.setData(newData)
+
+          }
+          else if(target.parent == 'Log'){ data,dim,base
+
+            let result = caculator_modules.log(this.vegaObject.getData(), sourcePortName, 'e')
+
+            this.vegaObject.setData(result.data)
+
+            let _com = that.getComponentByName(target.parent)
+
+            _com.setFieldName(result.name)
+
+          }
+
+          
       }
     },
 
@@ -390,11 +417,9 @@ export default {
 
       vegaEmbed("#canvas", result, {theme: 'dark'});
 
-      console.log(result);
     },
     changeDataType(name, dim){
 
-      console.log(name, dim)
     }
   },
   watch: {
@@ -459,6 +484,7 @@ export default {
       this.dataList.forEach(function(data) {
         data.dimensions.forEach(function(d) {
           d["checked"] = false;
+          d['color'] = '#202020'
         });
       });
     });
