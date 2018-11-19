@@ -12,7 +12,7 @@ export default class connector_modules {
        else if(type == 'outer'){
 
        }
-       else if(type == 'innner'){
+       else if(type == 'inner'){
 
 
        }

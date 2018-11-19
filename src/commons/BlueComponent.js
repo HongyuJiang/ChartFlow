@@ -18,6 +18,8 @@ export default class BlueComponent {
         this.dy = 0
         this.x = 300 * Math.random() + 100
         this.y = 100 * Math.random() + 100
+        this.dimPreview = ''
+        this.filterRange = []
 
         for(let key in options){
             this[key] = options[key]
@@ -285,5 +287,135 @@ export default class BlueComponent {
         })
         return ret
     }
+    showDataPreview(data, dim){
+
+        this.dimPreview = dim
+             
+        let that = this
+        let bins = {}
+
+        let data_max = d3.max(data, d => d[dim])
+        let data_min = d3.min(data, d => d[dim])
+
+        let factor = (data_max - data_min) / 20
+
+        let brush = d3.brushX()
+            .extent([[this.width*0.1, 10], [this.width*0.9, 50]])
+            .on("brush end", brushed);
+  
+        data.forEach(function(d){
+
+            let q = parseInt((d[dim] - data_min) / factor)
+
+            if(q in bins)
+                bins[q] += 1
+            else
+                bins[q] = 1
+        })
+
+        let bins_array = []
+
+        for(let key in bins){
+
+            bins_array.push({'key': key * factor + data_min, 'value': bins[key]})
+        }
+
+        let max_x = d3.max(bins_array, d => d.key)
+        let min_x = d3.min(bins_array, d => d.key)
+
+        let max_y = d3.max(bins_array, d => d.value)
+        let min_y = d3.min(bins_array, d => d.value)
+
+
+        let x_scale = d3.scaleLinear()
+        .domain([min_x, max_x])
+        .range([0, that.width * 0.8])
+
+        let y_scale = d3.scaleLinear()
+        .domain([min_y, max_y])
+        .range([0,50])
+
+        function brushed(){
+            if (!d3.event.sourceEvent) return; // Only transition after input.
+            if (!d3.event.selection) return; // Ignore empty selections.
+
+                let selection = d3.event.selection || x_scale.range();
+                let range = selection.map(x_scale.invert, x_scale);
+                that.filterRange = range
+
+                console.log(range)
+        
+        }
+
+        let offset = 30
+
+        this.container.append('line')
+        .attr('x1', that.width * 0.1)
+        .attr('y1', that.height + offset)
+        .attr('x2', that.width * 0.9)
+        .attr('y2', that.height + offset)
+        .attr('stroke','black')
+
+        let binsChart = this.container.selectAll('bins')
+        .data(bins_array)
+        .enter()
+        .append('rect')
+        .attr('x', d => x_scale(d.key) + that.width * 0.1)
+        .attr('y', d => that.height + offset - y_scale(d.value) / 2)
+        .attr('width', d => 50 / bins_array.length)
+        .attr('height', 0)
+        .attr('fill','steelblue')
+        .attr('stroke','none')
+
+        binsChart.transition()
+        .duration(500)
+        .attr('delay', 500)
+        .attr('height', d => y_scale(d.value))
+
+        this.container.append('text')
+        .attr('x', that.width * 0.1)
+        .attr('y', that.height + offset)
+        .attr('alignment-baseline', 'central')
+        .attr('text-anchor','end')
+        .attr('fill','white')
+        .text(parseInt(min_x))
+
+        this.container.append('text')
+        .attr('x', that.width * 0.9)
+        .attr('y', that.height + offset)
+        .attr('alignment-baseline', 'central')
+        .attr('fill','white')
+        .text(parseInt(max_x))
+
+        this.container.append('text')
+        .attr('x', that.width * 0.5)
+        .attr('y', that.height + offset + 25)
+        .attr('text-anchor','center')
+        .attr('alignment-baseline', 'central')
+        .attr('fill','white')
+        .text(parseInt(min_y))
+
+        this.container.append('text')
+        .attr('x', that.width * 0.5)
+        .attr('y', that.height + offset - 25)
+        .attr('text-anchor','center')
+        .attr('alignment-baseline', 'central')
+        .attr('fill','white')
+        .text(parseInt(max_y))
+
+        this.container.append("g")
+        .attr("class", "brush")
+        .call(brush)
+        .attr('transform','translate(0,' + that.height + ')')
+
+        that.container.selectAll('.back')
+        .transition()
+        .attr('height',  that.height + 70)
+    }
+    getFilterRangeAndDim(){
+
+        return {'range':this.filterRange,'dim':this.dimPreview}
+    }
+   
 
 }

@@ -57,7 +57,9 @@ export default class VegaModel {
 
     setMark(parent, mark){
 
-        if(mark == 'line'){
+        this.layers[parent].mark = mark
+
+        /*if(mark == 'line'){
 
             let fill = ''
             let stroke = '#ED3500'
@@ -68,10 +70,9 @@ export default class VegaModel {
             let fill = '#1473e6'
             let stroke = ''
             this.layers[parent].mark = {'type':mark,'fill':fill, 'stroke':stroke}
-        }
+        }*/
 
-        
-
+    
     }
     getOutput(){
 

@@ -1,9 +1,5 @@
 [
     { 
-        "name": "Data", 
-        "childrens": ["Table"]
-    }, 
-    { 
         "name": "Chart", 
         "childrens": ["Barchart", "Linechart", "Scatterplot", "Boxplot", "Stripplot"]
     }, 

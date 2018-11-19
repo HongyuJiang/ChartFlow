@@ -1,40 +1,19 @@
 export default class processor_modules {
 
-    static filter(threshold,data,dim,operator){
+    static filter(data, range, dim){
+
+        let newName = 'filtered_' + dim
         
         let newData = []
 
         data.forEach(function(d){
 
-            if(operator == '='){
-
-                if(d[dim] == threshold)
-                newData.push(d)
-                
-            }
-            else if(operator == '>'){
-
-                if(d[dim] > threshold)
-                newData.push(d)
-            }
-            else if(operator == '>='){
-
-                if(d[dim] >= threshold)
-                newData.push(d)
-            }
-            else if(operator == '<'){
-
-                if(d[dim] <= threshold)
-                newData.push(d)
-            }
-            else if(operator == '<='){
-
-                if(d[dim] <= threshold)
-                newData.push(d)
-            }
+            if(d[dim] <= range[1] && d[dim] >= range[0])
+            newData.push(d)
+            
         })
 
-        return newData
+        return {'data':newData,'name':newName}
         
     }
     static log(data,dim,base){

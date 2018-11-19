@@ -21,10 +21,17 @@
         <a href="#">Update</a>
       </vs-navbar-item>
     </vs-navbar>
+
+    <div class='toolbar' style='position:absolute;top:45px;right:18%'>
+      <vs-button class='tool_button' radius color="#1473e6" type="filled" icon="delete"></vs-button>
+      <vs-button class='tool_button' radius color="#1473e6" type="filled" icon="timeline"></vs-button>
+      <vs-button class='tool_button' radius color="#1473e6" type="filled" icon="view_quilt"></vs-button>
+
+    </div>
   
      <vs-row vs-h="6">
 
-        <vs-col id='data_list_container' vs-type="flex" vs-justify="left" vs-align="top" vs-w="2" style="max-height:700px;overflow-y:scroll">
+        <vs-col id='data_list_container' vs-type="flex" vs-justify="left" vs-align="top" vs-w="2" style="max-height:800px;overflow-y:scroll">
              <div id='data_list'>
               <vs-list :key="index" v-for="(data, index) in dataList">
               
@@ -36,7 +43,7 @@
                     <vs-list-item>
                       <h3 style="float:left;color:white">{{dim.name}}</h3>
                        <vs-select style="float:left;width:170px" v-model="dim.type">
-                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="item,index in dataTypes" />
+                        <vs-select-item :key="index" :value="item.value" :text="item.text" v-for="(item,index) in dataTypes" />
                       </vs-select>
                         <vs-avatar style="float:right;margin:0px;margin-left:10px" :color="dim.color" text="Add" v-on:click="dimensionSelected(data.name, dim)"/>
                     </vs-list-item>
@@ -49,7 +56,7 @@
              <div id='preview'><svg id ='editorborad'></svg></div>
         </vs-col>
 
-        <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="2" style="max-height:700px;overflow-y:scroll">
+        <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="2" style="max-height:800px;overflow-y:scroll">
             <div id='editor'>
 
               <vs-collapse accordion :key="index" v-for="(group, index) in componentTypes">
@@ -65,6 +72,8 @@
                 </vs-collapse-item>
               </vs-collapse >
             
+              <vs-button style="width:50%; justify-content: right; float:right;margin-right:15%" color="#ED3500" type="filled" :key="index" icon="apps">Find more component</vs-button>
+
             </div>
         </vs-col>
     </vs-row>
@@ -113,7 +122,7 @@ export default {
         Data: "#F6BB42",
         Chart: "#967ADC",
         Caculator: "#37BC9B",
-        Processer: "#ffa824",
+        Processor: "#ffa824",
         Connector: "#704cff",
         
       },
@@ -177,7 +186,7 @@ export default {
         .attr('y2', function(d){
           return d.y2
         })
-        .attr('stroke','#666')
+        .attr('stroke','#555')
       }
 
     },
@@ -304,6 +313,8 @@ export default {
     },
     setVegaConfig(source, target){
 
+      console.log(source.attr, target.attr)
+
       let that = this
 
       if (source.attr == "field" && target.attr == "encoding") {
@@ -361,24 +372,46 @@ export default {
 
           if(target.parent == 'Filter'){
 
-            let newData = caculator_modules.filter(10, this.vegaObject.getData(), sourcePortName, '>')
-
-            this.vegaObject.setData(newData)
+            this.getComponentByName(target.parent)
+            .showDataPreview(this.vegaObject.getData(), sourcePortName)
 
           }
-          else if(target.parent == 'Log'){ data,dim,base
+          else if(target.parent == 'Log'){ 
 
             let result = caculator_modules.log(this.vegaObject.getData(), sourcePortName, 'e')
 
             this.vegaObject.setData(result.data)
 
-            let _com = that.getComponentByName(target.parent)
+            let _com = this.getComponentByName(target.parent)
 
             _com.setFieldName(result.name)
 
           }
-
           
+      }
+
+      if(source.attr == 'processor' && target.attr == 'encoding'){
+
+        if(source.parent == 'Filter'){
+
+            let ret = this.getComponentByName(source.parent).getFilterRangeAndDim()
+
+            let range = ret.range
+
+            let dimPreview = ret.dim
+
+            let result = processor_modules.filter(this.vegaObject.getData(), range, dimPreview)
+
+            this.vegaObject.setData(result.data)
+
+            console.log(range, dimPreview, result.data)
+
+            let _com = this.getComponentByName(target.parent)
+
+            _com.setFieldName(result.name)
+           
+          }
+
       }
     },
 
@@ -414,6 +447,8 @@ export default {
       }
 
       let result = this.vegaObject.getOutputForced();
+
+      console.log(result)
 
       vegaEmbed("#canvas", result, {theme: 'dark'});
 
