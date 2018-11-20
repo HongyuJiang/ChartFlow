@@ -4,9 +4,11 @@
 [![codecov](https://codecov.io/gh/vega/vega-lite/branch/master/graph/badge.svg)](https://codecov.io/gh/vega/vega-lite)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=rounded)](https://github.com/prettier/prettier)
 
-![Teaser](system.png)
+![Teaser](preview1.png)
 
 > A visualization building tool base on Vega-lite and blueprint
+
+![Teaser](preview2.png)
 
 ![Demo](demo.gif)
 
