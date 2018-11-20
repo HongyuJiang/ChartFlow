@@ -35,7 +35,8 @@
              <div id='data_list'>
               <vs-list :key="index" v-for="(data, index) in dataList">
               
-                  <vs-button color="dark" type="line" :key="data.index" v-on:click="dataSelected(index)" icon="menu">{{data.name}}</vs-button>
+                  <vs-button color="dark" type="line" :key="data.index" icon="menu">{{data.name}}</vs-button>
+                  <span style="color:rgb(20, 115, 230);padding:10px;float:right;font-size:13px">Length: {{data.length}}</span>
               
                   <vs-divider></vs-divider>
             
@@ -66,24 +67,30 @@
                   </div>
                   <vs-list :key="index" v-for="(meta, index) in group.childrens">
 
-                    <vs-button style="width:80%; justify-content: left; margin-left:10%" color="rgb(134,4,98)" type="filled" :key="index" v-on:click="createNewComponent(group.name, meta)" icon="add_circle">{{meta}}</vs-button>
+                    <vs-button style="width:80%; justify-content: left; margin-left:10%" color="rgb(134,4,98)" type="filled"  v-on:click="createNewComponent(group.name, meta)" icon="add_circle">{{meta}}</vs-button>
                     <vs-divider></vs-divider>
                   </vs-list>  
                 </vs-collapse-item>
               </vs-collapse >
             
-              <vs-button style="width:50%; justify-content: right; float:right;margin-right:15%" color="#ED3500" type="filled" :key="index" icon="apps">Find more component</vs-button>
+              <vs-button style="width:50%; justify-content: right; float:right;margin-right:15%" color="#ED3500" type="filled" icon="apps">Find more component</vs-button>
 
             </div>
         </vs-col>
     </vs-row>
 
     <vs-row vs-h="4">
-     <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="12">
+      <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="2">
+             <div id='infoPanel' style='height:500px'>
+                <vs-textarea style='color:white; height:500px' cols="100" rows="25" color='white' v-model="model_config_text" />
+             </div>
+    </vs-col>
+     <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="10">
              <div id='canvas'>
           
              </div>
-        </vs-col>
+    </vs-col>
+    
     </vs-row>
 
     <vs-row vs-h="4">
@@ -136,7 +143,8 @@ export default {
       drawingLine: "",
       vegaObject:"",
       contextData:"",
-      dataTypes:config.typesPrefab
+      dataTypes:config.typesPrefab,
+      model_config_text: ''
     };
   },
   methods: {
@@ -313,8 +321,6 @@ export default {
     },
     setVegaConfig(source, target){
 
-      console.log(source.attr, target.attr)
-
       let that = this
 
       if (source.attr == "field" && target.attr == "encoding") {
@@ -330,10 +336,11 @@ export default {
         that.vegaObject.setEncoding(target.parent, meta);
         that.vegaObject.setMark(target.parent, maker);
         
-
       } 
 
       if(source.attr == 'field' && target.attr == "operator"){
+
+          console.log(source.name)
 
           caculator_modules.setOperator(source.name)
           
@@ -341,17 +348,12 @@ export default {
 
             let result = {}
 
-            if(target.parent == 'Sum'){
-
+            if(target.parent == 'Sum')
               result = caculator_modules.sum(this.vegaObject.getData())
-
-            }
-
-            if(target.parent == 'Reduce'){
-
+            else if(target.parent == 'Reduce')
               result = caculator_modules.reduce(this.vegaObject.getData())
-
-            }
+            else if(target.parent == 'Multi')
+              result = caculator_modules.multiple(this.vegaObject.getData())
 
             let newData = result.data, newName = result.name
 
@@ -404,8 +406,6 @@ export default {
 
             this.vegaObject.setData(result.data)
 
-            console.log(range, dimPreview, result.data)
-
             let _com = this.getComponentByName(target.parent)
 
             _com.setFieldName(result.name)
@@ -419,7 +419,7 @@ export default {
 
       let that = this
 
-      if(this.vegaObject == '') this.vegaObject = new VegaModel(300,this.width,'Test');
+      if(this.vegaObject == '') this.vegaObject = new VegaModel(this.height/2,this.width * 1.1,'Test');
 
       let source = connect.source;
       let target = connect.target;
@@ -504,11 +504,22 @@ export default {
         }
       },
       deep: true
+    },
+    vegaObject:{
+
+      handler(curVal, oldVal) {
+
+        this.model_config_text = JSON.stringify(this.vegaObject.getConfig(), null, 4)
+      },
+      deep: true
+      
     }
   },
   mounted() {
     let that = this;
     this.chartInit("#preview");
+
+    d3.selectAll('textarea').style('color','white').style('font-size','16px')
 
     window.addEventListener("resize", () => {
       this.chartResize(window.innerWidth * 0.65, window.innerHeight * 0.6);
@@ -516,6 +527,7 @@ export default {
 
     dataHelper.getDataList().then(response => {
       this.dataList = response.data;
+      
       this.dataList.forEach(function(data) {
         data.dimensions.forEach(function(d) {
           d["checked"] = false;

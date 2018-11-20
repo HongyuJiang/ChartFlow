@@ -61,20 +61,18 @@ export default class BlueComponent {
     }
     setFieldName(name){
 
-        if(this.outPorts.length == 1){
-            this.outPorts[0].name = this.outPorts[0].name[0].toUpperCase() + 
+        this.outPorts[0].name = name
+
+        this.outPorts[0].dimension_type = 'quantitative'
+       /* if(this.outPorts.length == 1){
+            this.outPorts[0].text = this.outPorts[0].name[0].toUpperCase() + 
             this.outPorts[0].name.slice(1, this.outPorts[0].name.length)
-
-            console.log(this.outPorts[0].name)
-
             this.outPorts[0].dimension_type = 'quantitative'
-        }
+        }*/
     }
     addPort(type, port){
 
         port.text = port.text[0].toUpperCase() + port.text.slice(1, port.text.length)
-
-        console.log(port.text)
 
         if(type == 'in'){
             this.inPorts.push(port)
@@ -300,7 +298,7 @@ export default class BlueComponent {
         let factor = (data_max - data_min) / 20
 
         let brush = d3.brushX()
-            .extent([[this.width*0.1, 10], [this.width*0.9, 50]])
+            .extent([[this.width * 0.1, 10], [this.width * 0.9, 50]])
             .on("brush end", brushed);
   
         data.forEach(function(d){
@@ -326,6 +324,8 @@ export default class BlueComponent {
         let max_y = d3.max(bins_array, d => d.value)
         let min_y = d3.min(bins_array, d => d.value)
 
+        if(max_y == min_y) min_y -= 1
+
 
         let x_scale = d3.scaleLinear()
         .domain([min_x, max_x])
@@ -333,7 +333,7 @@ export default class BlueComponent {
 
         let y_scale = d3.scaleLinear()
         .domain([min_y, max_y])
-        .range([0,50])
+        .range([0,40])
 
         function brushed(){
             if (!d3.event.sourceEvent) return; // Only transition after input.
@@ -342,10 +342,10 @@ export default class BlueComponent {
                 let selection = d3.event.selection || x_scale.range();
                 let range = selection.map(x_scale.invert, x_scale);
                 that.filterRange = range
-
-                console.log(range)
         
         }
+
+        console.log(bins_array)
 
         let offset = 30
 
@@ -362,9 +362,11 @@ export default class BlueComponent {
         .append('rect')
         .attr('x', d => x_scale(d.key) + that.width * 0.1)
         .attr('y', d => that.height + offset - y_scale(d.value) / 2)
-        .attr('width', d => 50 / bins_array.length)
-        .attr('height', 0)
-        .attr('fill','steelblue')
+        .attr('width', d => 70 / bins_array.length)
+        .attr('height', function(d){
+            return 0
+        })
+        .attr('fill','#ccc')
         .attr('stroke','none')
 
         binsChart.transition()

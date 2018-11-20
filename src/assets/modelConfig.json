@@ -102,6 +102,17 @@
         ],
         "type":"Caculator"
     },
+    "Multi":{
+
+        "inPorts": [
+            {"name":"Num A","text":"Num A","attr":"operator","type":"in"},
+            {"name":"Num B","text":"Num B","attr":"operator","type":"in"}
+        ],
+        "outPorts": [
+            {"name":"Multi","text":"Multi","attr":"field","type":"out"}
+        ],
+        "type":"Caculator"
+    },
     "Table":{
 
         "inPorts": [],

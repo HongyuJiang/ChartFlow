@@ -146,6 +146,13 @@ export default class BlueprintLine {
             x1 = xa - xabs * pControl;
             y1 = ya;
         }
+        else{
+
+            x2 = xb;
+            y2 = yb;
+            x1 = xa;
+            y1 = ya;
+        }
         points = [[xa, ya], [x1, y1], [x2, y2], [xb, yb]]
         return points
     }
@@ -154,14 +161,16 @@ export default class BlueprintLine {
         //input [[xa,ya],[x1,y1],[x2,y2],[xb,yb]]
         //曲线生成器
 
+        //console.log(points)
+
         let lineGenerator = d3.line().curve(d3.curveBasis),
             pathData = lineGenerator(points),
             curveWidth = '3px';
 
-        if (this.isWaitPath == false) {
+        if (this.baseLine == '') {
 
             //没有待绘制路径,路径第一次绘制
-            this.isWaitPath = !this.isWaitPath
+            this.isWaitPath = true
             this.baseLine = this.container.append('path')
                 .attr('d', pathData)
                 .style('fill', 'none')

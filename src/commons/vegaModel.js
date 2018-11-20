@@ -9,6 +9,7 @@ export default class VegaModel {
         this.data["spec"] = {'layer':[]};
         this.data["repeat"] = {};
         this.data['background'] = '#202020'
+        this.config = {}
       
         this['data'].title = {
 
@@ -38,6 +39,7 @@ export default class VegaModel {
             let meta = {'field': rule.name, 'type':rule.type}
 
             this.layers[parent].encoding[rule.key] = meta
+            
         }
         else{
 
@@ -46,6 +48,12 @@ export default class VegaModel {
             let meta = {'field': rule.name, 'type':rule.type}
 
             this.layers[parent].encoding[rule.key] = meta
+
+            this.layers[parent]['width'] = this.data["width"]
+
+            this.layers[parent]['height'] = this.data["height"]
+
+            this.data.spec.layer.push(this.layers[parent])
         
         }
         
@@ -72,7 +80,8 @@ export default class VegaModel {
             this.layers[parent].mark = {'type':mark,'fill':fill, 'stroke':stroke}
         }*/
 
-    
+        
+
     }
     getOutput(){
 
@@ -92,7 +101,9 @@ export default class VegaModel {
 
     getOutputForced(){
 
-        this.data.spec.layer = []
+        /*let data = this.data
+
+        let layers = this.data.spec.layer
 
         for(name in this.layers){
 
@@ -102,10 +113,24 @@ export default class VegaModel {
 
             layer['height'] = this.data["height"]
 
-            this.data.spec.layer.push(layer)
+            layers.push(layer)
 
         }
 
+        data.layer = layers*/
+
         return this.data
+    }
+    getConfig(){
+
+        for(let key in this.data){
+
+            if(key !== 'data'){
+
+                this.config[key] = this.data[key]
+            }
+        }
+
+        return this.config
     }
 }
