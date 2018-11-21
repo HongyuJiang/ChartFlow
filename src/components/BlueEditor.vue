@@ -115,6 +115,7 @@ import modelConfig from "../assets/modelConfig.json";
 import BlueprintLine from "../commons/BlueprintLine";
 import VegaModel from "../commons/vegaModel";
 
+
 export default {
   name: "blue-editor",
   data() {
@@ -123,7 +124,7 @@ export default {
       componentTypes: blueComponentTypes, // components' types of blueprint
       container: "", //canvas to drawing blueprint
       modelConfig: modelConfig, //configuration detail of each component model
-      selectedData: {}, //The datasets which been loaded
+      selectedData: {}, //The dimensions in dataset which been selected by user
       dataComponent: {}, //The exsiting components in canvas (used to check the exsiting)
       blueComponents: [], //The exsiting components in canvas (used to store the exsiting)
       blueLines: [], //The exsiting line in canvas which connected to any component
@@ -133,7 +134,9 @@ export default {
       vegaObject: "", //The vege model configuration
       contextData: "", //Shows which dataset which is using in blueprint
       dataTypes: config.typesPrefab, //Store all the data type which supported by vega-lite
-      model_config_text: "" //The text which translated by vega-lite model
+      model_config_text: "", //The text which translated by vega-lite model
+      dataConnection:{},
+      loadedDatasets:{}
     };
   },
   methods: {
@@ -320,7 +323,7 @@ export default {
     },
 
     //The configurariton change rules
-    setVegaConfig(source, target) {
+    async setVegaConfig(source, target) {
       let that = this;
 
       // The case of source attribution is 「FIELD」 and target is 「ENCODING」
@@ -362,6 +365,58 @@ export default {
 
           _com.setFieldName(newName);
         }
+      }
+
+      // The case of source attribution is 「FIELD」 and target is 「CONNECTOR」
+
+      if (source.attr == "field" && target.attr == "connector") {
+
+        if(this.loadedDatasets[source.parent] == undefined){
+          
+          await dataHelper.getDataDetail(source.parent).then(function(response) {
+
+            //console.log(response)
+
+            that.loadedDatasets[source.parent] = response.data.data.values
+          });
+          
+        }
+        
+        if (this.dataConnection[source.parent] == undefined){
+
+          this.dataConnection[source.parent] = {'data': this.loadedDatasets[source.parent], 'dataName':source.parent, 'dim':source.name}
+
+          if (d3.keys(this.dataConnection).length == 2){
+
+            let keys = d3.keys(this.dataConnection)
+
+            let data1 = this.dataConnection[keys[0]];
+            let data2 = this.dataConnection[keys[1]];
+
+
+            console.log(data1, data2)
+
+            if(target.parent == 'Left Join'){
+              dataHelper.leftJoin(data1, data2)
+            }
+            else if (target.parent == 'Right Join'){
+              dataHelper.rightJoin(data1, data2)
+            }
+            else if (target.parent == 'Inner Join'){
+              dataHelper.innerJoin(data1, data2)
+            }
+            else{
+              dataHelper.outerJoin(data1, data2)
+            }
+          }
+          else if(d3.keys(this.dataConnection).length > 2){
+            
+            this.dataConnection[source.parent] = {}
+            this.dataConnection[source.parent] = {'data': this.loadedDatasets[source.parent], 'dataName':source.parent, 'dim':source.name}
+          }
+         
+        }
+
       }
 
       // The case of source attribution is 「FIELD」 and target is PROCESSOR
@@ -451,6 +506,7 @@ export default {
         dataHelper.getDataDetail(source.parent).then(function(response) {
           that.vegaObject.setData(response.data.data.values);
           that.setVegaConfig(source, target);
+          that.loadedDatasets[response.data.name] = response.data.data.values
         });
       } else {
         that.setVegaConfig(source, target);

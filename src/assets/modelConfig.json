@@ -141,33 +141,33 @@
     },
     "Left Join":{
 
-        "outPorts": [
-            {"name":"dim","text":"Dim","attr":"processor","type":"in"},
-            {"name":"dim","text":"Dim","attr":"processor","type":"in"}
+        "inPorts": [
+            {"name":"dim","text":"Dim","attr":"connector","type":"in"},
+            {"name":"dim","text":"Dim","attr":"connector","type":"in"}
         ],
         "type":"Connector"
     },
     "Right Join":{
 
-        "outPorts": [
-            {"name":"dim","text":"Dim","attr":"processor","type":"in"},
-            {"name":"dim","text":"Dim","attr":"processor","type":"in"}
+        "inPorts": [
+            {"name":"dim","text":"Dim","attr":"connector","type":"in"},
+            {"name":"dim","text":"Dim","attr":"connector","type":"in"}
         ],
         "type":"Connector"
     },
     "Inner Join":{
 
-        "outPorts": [
-            {"name":"dim","text":"Dim","attr":"processor","type":"in"},
-            {"name":"dim","text":"Dim","attr":"processor","type":"in"}
+        "inPorts": [
+            {"name":"dim","text":"Dim","attr":"connector","type":"in"},
+            {"name":"dim","text":"Dim","attr":"connector","type":"in"}
         ],
         "type":"Connector"
     },
     "Outer Join":{
 
-        "outPorts": [
-            {"name":"dim","text":"Dim","attr":"processor","type":"in"},
-            {"name":"dim","text":"Dim","attr":"processor","type":"in"}
+        "inPorts": [
+            {"name":"dim","text":"Dim","attr":"connector","type":"in"},
+            {"name":"dim","text":"Dim","attr":"connector","type":"in"}
         ],
         "type":"Connector"
     }
