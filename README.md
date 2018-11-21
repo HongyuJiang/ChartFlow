@@ -21,8 +21,4 @@ npm install
 npm run dev
 ```
 
-©2018 VIS & VR Team, Southwest University of Science & Technology. 
-
-All rights reserved. 
-
-Please feel free to contact me if you have any question.
+VIS & VR Team, Southwest University of Science & Technology. 
