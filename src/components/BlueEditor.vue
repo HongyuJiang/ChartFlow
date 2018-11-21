@@ -60,14 +60,14 @@
         <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="2" style="max-height:800px;overflow-y:scroll">
             <div id='editor'>
 
-              <vs-collapse accordion :key="index" v-for="(group, index) in componentTypes">
+              <vs-collapse accordion :key="item.name" v-for="item in componentTypes">
                 <vs-collapse-item>
                   <div slot="header" style="color:white; border-left:white solid 2px; padding-left:10px">
-                    {{group.name}}
+                    {{item.name}}
                   </div>
-                  <vs-list :key="index" v-for="(meta, index) in group.childrens">
+                  <vs-list :key="index" v-for="(meta, index) in item.childrens">
 
-                    <vs-button style="width:80%; justify-content: left; margin-left:10%" color="rgb(134,4,98)" type="filled"  v-on:click="createNewComponent(group.name, meta)" icon="add_circle">{{meta}}</vs-button>
+                    <vs-button style="width:80%; justify-content: left; margin-left:10%" color="rgb(134,4,98)" type="filled"  v-on:click="createNewComponent(item.name, meta)" icon="add_circle">{{meta}}</vs-button>
                     <vs-divider></vs-divider>
                   </vs-list>  
                 </vs-collapse-item>
@@ -137,6 +137,7 @@ export default {
     };
   },
   methods: {
+
     //Intialized the blueprint canvas
     chartInit(container, props) {
       let that = this;
@@ -148,6 +149,7 @@ export default {
       this.container.append("g").attr("id", "grid_layer");
       this.chartResize(window.innerWidth * 0.65, window.innerHeight * 0.6);
     },
+
     //Darwing the grids line in canvas which help user the recognize the canvas and components
     drawGrids() {
       let lineData = [];
