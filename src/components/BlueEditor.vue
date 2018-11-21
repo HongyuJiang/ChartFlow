@@ -119,35 +119,25 @@ export default {
   name: "blue-editor",
   data() {
     return {
-      active: false,
-      indexOfSelectedData: 0,
-      globalchartIndex: 0,
-      dataList: [],
-      componentTypes: blueComponentTypes,
-      container: "",
-      colors: {
-        Data: "#F6BB42",
-        Chart: "#967ADC",
-        Caculator: "#37BC9B",
-        Processor: "#ffa824",
-        Connector: "#704cff",
-        
-      },
-      modelConfig: modelConfig,
-      selectedData: {},
-      dataComponent: {},
-      blueComponents: [],
-      blueLines: [],
-      connections: [],
-      mouseAction: "",
-      drawingLine: "",
-      vegaObject:"",
-      contextData:"",
-      dataTypes:config.typesPrefab,
-      model_config_text: ''
+      dataList: [], //data candidates list
+      componentTypes: blueComponentTypes, // components' types of blueprint
+      container: "", //canvas to drawing blueprint
+      modelConfig: modelConfig, //configuration detail of each component model
+      selectedData: {}, //The datasets which been loaded
+      dataComponent: {}, //The exsiting components in canvas (used to check the exsiting)
+      blueComponents: [], //The exsiting components in canvas (used to store the exsiting)
+      blueLines: [], //The exsiting line in canvas which connected to any component
+      connections: [], //Store the connections between component which connected by curve
+      mouseAction: "", //mouse action label which used to change the mouse action state
+      drawingLine: "", //The line which is being darwing by user
+      vegaObject: "", //The vege model configuration
+      contextData: "", //Shows which dataset which is using in blueprint
+      dataTypes: config.typesPrefab, //Store all the data type which supported by vega-lite
+      model_config_text: "" //The text which translated by vega-lite model
     };
   },
   methods: {
+    //Intialized the blueprint canvas
     chartInit(container, props) {
       let that = this;
 
@@ -155,49 +145,42 @@ export default {
         this.data[key] = props[key];
       }
       this.container = d3.select("#editorborad");
-      this.container.append('g').attr('id','grid_layer')
+      this.container.append("g").attr("id", "grid_layer");
       this.chartResize(window.innerWidth * 0.65, window.innerHeight * 0.6);
-    
     },
-    drawGrids(){
+    //Darwing the grids line in canvas which help user the recognize the canvas and components
+    drawGrids() {
+      let lineData = [];
 
-      let lineData = []
-
-      for(let i = 10;i<this.width;i+=20){
-
-          lineData.push({'x1':i,'y1':0,'x2':i,'y2':this.height})
+      for (let i = 10; i < this.width; i += 20) {
+        lineData.push({ x1: i, y1: 0, x2: i, y2: this.height });
       }
 
-      for(let i = 10;i<this.height;i+=20){
-
-          lineData.push({'x1':0,'y1':i,'x2':this.width,'y2':i})
+      for (let i = 10; i < this.height; i += 20) {
+        lineData.push({ x1: 0, y1: i, x2: this.width, y2: i });
       }
 
-      if(this.container != ''){
+      if (this.container != "") {
+        this.container
+          .select("#grid_layer")
+          .selectAll("*")
+          .remove();
 
-        this.container.select('#grid_layer').selectAll('*')
-        .remove()
-
-        this.container.select('#grid_layer').selectAll('.grid_lines')
-        .data(lineData)
-        .enter()
-        .append('line')
-        .attr('x1', function(d){
-          return d.x1
-        })
-        .attr('x2', function(d){
-          return d.x2
-        })
-        .attr('y1', function(d){
-          return d.y1
-        })
-        .attr('y2', function(d){
-          return d.y2
-        })
-        .attr('stroke','#555')
+        this.container
+          .select("#grid_layer")
+          .selectAll(".grid_lines")
+          .data(lineData)
+          .enter()
+          .append("line")
+          .attr("x1", d => d.x1)
+          .attr("x2", d => d.x2)
+          .attr("y1", d => d.y1)
+          .attr("y2", d => d.y2)
+          .attr("stroke", "#555");
       }
-
     },
+
+    //Resize the canvas after window's size has been updated
     chartResize(innerWidth, innerHeight) {
       let height = innerHeight > innerWidth * 2 ? innerWidth * 2 : innerHeight;
       let width = innerWidth;
@@ -208,29 +191,34 @@ export default {
         .attr("width", this.width)
         .attr("height", this.height);
 
-      this.drawGrids()
+      this.drawGrids();
     },
+
+    //create a new component to canvas which need a component type and a unique name
     createNewComponent(group, name) {
       let properties = this.modelConfig[name];
-      properties["fill"] = this.colors[group];
+      properties["fill"] = this.componentTypes[group].color;
       properties["name"] = name;
 
       let _com = new BlueComponent(this.container, properties);
       this.addClickEvent2Circle(_com);
       this.blueComponents.push(_com);
     },
-    getComponentByName(name){
-      for(let i=0;i<this.blueComponents.length;i++){
 
-        if(name == this.blueComponents[i].name){
-
-          return this.blueComponents[i]
+    //find the component by the component's name
+    getComponentByName(name) {
+      for (let i = 0; i < this.blueComponents.length; i++) {
+        if (name == this.blueComponents[i].name) {
+          return this.blueComponents[i];
         }
       }
     },
+
+    //boundind the click event to the circles which represent the ports in component
     addClickEvent2Circle(com) {
       let that = this;
 
+      //darwing the connection line accroding to the mouse real-time position
       this.container.on("mousemove", function(d) {
         if (
           that.mouseAction == "drawing_line" &&
@@ -242,6 +230,7 @@ export default {
         }
       });
 
+      //after click the circle, there will new a line in canvas
       com.getAllCircles().on("click", function(d) {
         let x = d.parentX + d.x;
         let y = d.parentY + d.y;
@@ -272,6 +261,15 @@ export default {
         line.setExstingPorts(allPorts);
       });
     },
+
+    ///////////////////////////////
+    // Add dimension to context data from candicate dataset
+    // IF the component is exsit:
+    //     Add a port to the component
+    // ELSE
+    //     Add a new component contain this port
+    ////////////////////////////////
+
     dimensionSelected(source, dim) {
       dim.checked = !dim.checked;
 
@@ -302,14 +300,13 @@ export default {
         this.selectedData[source][dim.name] = "1";
 
         let properties = this.modelConfig["Table"];
-        properties["outPorts"] = 
-        [
-          { 
-            name: dim.name, 
-            text: dim.name, 
+        properties["outPorts"] = [
+          {
+            name: dim.name,
+            text: dim.name,
             dimension_type: dim.type,
-            type: "out", 
-            attr: "field" 
+            type: "out",
+            attr: "field"
           }
         ];
         properties["name"] = source;
@@ -319,145 +316,153 @@ export default {
         this.blueComponents.push(_com);
       }
     },
-    setVegaConfig(source, target){
 
-      let that = this
+    //The configurariton change rules
+    setVegaConfig(source, target) {
+      let that = this;
 
+      // The case of source attribution is 「FIELD」 and target is 「ENCODING」
       if (source.attr == "field" && target.attr == "encoding") {
-        
-        let meta = { 
-          name: source.name, 
-          key: target.name, 
-          type: source.dimension_type 
+        let meta = {
+          name: source.name,
+          key: target.name,
+          type: source.dimension_type
         };
 
-        let maker = that.modelConfig[target.parent].maker
+        let maker = that.modelConfig[target.parent].maker;
 
         that.vegaObject.setEncoding(target.parent, meta);
         that.vegaObject.setMark(target.parent, maker);
-        
-      } 
-
-      if(source.attr == 'field' && target.attr == "operator"){
-
-          console.log(source.name)
-
-          caculator_modules.setOperator(source.name)
-          
-          if(caculator_modules.operatorsSetted()){
-
-            let result = {}
-
-            if(target.parent == 'Sum')
-              result = caculator_modules.sum(this.vegaObject.getData())
-            else if(target.parent == 'Reduce')
-              result = caculator_modules.reduce(this.vegaObject.getData())
-            else if(target.parent == 'Multi')
-              result = caculator_modules.multiple(this.vegaObject.getData())
-
-            let newData = result.data, newName = result.name
-
-            this.vegaObject.setData(newData)
-
-            caculator_modules.resetOperators()
-
-            let _com = this.getComponentByName(target.parent)
-
-            _com.setFieldName(newName)
-            
-          }
       }
 
-      if(source.attr == 'field' && target.attr == 'processor'){
+      // The case of source attribution is 「FIELD」 and target is 「OPERATOR」
+      if (source.attr == "field" && target.attr == "operator") {
+        caculator_modules.setOperator(source.name);
 
-          let sourcePortName = source.name
+        if (caculator_modules.operatorsSetted()) {
+          let result = {};
 
-          if(target.parent == 'Filter'){
+          if (target.parent == "Sum")
+            result = caculator_modules.sum(this.vegaObject.getData());
+          else if (target.parent == "Reduce")
+            result = caculator_modules.reduce(this.vegaObject.getData());
+          else if (target.parent == "Multi")
+            result = caculator_modules.multiple(this.vegaObject.getData());
 
-            this.getComponentByName(target.parent)
-            .showDataPreview(this.vegaObject.getData(), sourcePortName)
+          let newData = result.data,
+            newName = result.name;
 
-          }
-          else if(target.parent == 'Log'){ 
+          this.vegaObject.setData(newData);
 
-            let result = caculator_modules.log(this.vegaObject.getData(), sourcePortName, 'e')
+          caculator_modules.resetOperators();
 
-            this.vegaObject.setData(result.data)
+          let _com = this.getComponentByName(target.parent);
 
-            let _com = this.getComponentByName(target.parent)
-
-            _com.setFieldName(result.name)
-
-          }
-          
+          _com.setFieldName(newName);
+        }
       }
 
-      if(source.attr == 'processor' && target.attr == 'encoding'){
+      // The case of source attribution is 「FIELD」 and target is PROCESSOR
+      if (source.attr == "field" && target.attr == "processor") {
+        let sourcePortName = source.name;
 
-        if(source.parent == 'Filter'){
+        if (target.parent == "Filter") {
+          this.getComponentByName(target.parent).showDataPreview(
+            this.vegaObject.getData(),
+            sourcePortName
+          );
 
-            let ret = this.getComponentByName(source.parent).getFilterRangeAndDim()
+          let _com = this.getComponentByName(target.parent);
 
-            let range = ret.range
+          _com.setFieldName(source.name);
+        } else if (target.parent == "Log") {
+          let result = caculator_modules.log(
+            this.vegaObject.getData(),
+            sourcePortName,
+            "e"
+          );
 
-            let dimPreview = ret.dim
+          this.vegaObject.setData(result.data);
 
-            let result = processor_modules.filter(this.vegaObject.getData(), range, dimPreview)
+          let _com = this.getComponentByName(target.parent);
 
-            this.vegaObject.setData(result.data)
+          _com.setFieldName(result.name);
+        }
+      }
 
-            let _com = this.getComponentByName(target.parent)
+      // The case of source attribution is 「PROCESSOR」 and target is 「ENCODING」
+      if (source.attr == "processor" && target.attr == "encoding") {
+        if (source.parent == "Filter") {
+          let meta = {
+            name: source.name,
+            key: target.name,
+            type: source.dimension_type
+          };
 
-            _com.setFieldName(result.name)
-           
-          }
+          let ret = this.getComponentByName(
+            source.parent
+          ).getFilterRangeAndDim();
 
+          let range = ret.range;
+
+          let dimPreview = ret.dim;
+
+          let result = processor_modules.filter(
+            this.vegaObject.getData(),
+            range,
+            dimPreview
+          );
+
+          this.vegaObject.setData(result.data);
+
+          let maker = this.modelConfig[target.parent].maker;
+
+          this.vegaObject.setEncoding(target.parent, meta);
+          this.vegaObject.setMark(target.parent, maker);
+        }
       }
     },
 
+    //If a new connection is built, the vega-lite configuration will be update
     connectionParse(connect) {
+      let that = this;
 
-      let that = this
-
-      if(this.vegaObject == '') this.vegaObject = new VegaModel(this.height/2,this.width * 1.1,'Test');
+      //If there is none vegaObject created, new one
+      if (this.vegaObject == "")
+        this.vegaObject = new VegaModel(
+          parseInt(this.height / 2),
+          parseInt(this.width * 1.1),
+          "Test"
+        );
 
       let source = connect.source;
       let target = connect.target;
 
-    
-      let dataNameDict = {}
-      that.dataList.forEach(function(d){
+      let dataNameDict = {};
+      that.dataList.forEach(function(d) {
+        dataNameDict[d.name] = 1;
+      });
 
-        dataNameDict[d.name] = 1
-      })
-
-      if(source.parent in dataNameDict && source.parent != this.contextData){
-
-        this.contextData = source.parent
+      if (source.parent in dataNameDict && source.parent != this.contextData) {
+        this.contextData = source.parent;
 
         dataHelper.getDataDetail(source.parent).then(function(response) {
-
           that.vegaObject.setData(response.data.data.values);
-          that.setVegaConfig(source, target)
+          that.setVegaConfig(source, target);
         });
-      }
-      else{
-
-        that.setVegaConfig(source, target)
+      } else {
+        that.setVegaConfig(source, target);
       }
 
       let result = this.vegaObject.getOutputForced();
 
-      console.log(result)
-
-      vegaEmbed("#canvas", result, {theme: 'dark'});
-
+      //Show the result in bottom canvas via vage compilier
+      vegaEmbed("#canvas", result, { theme: "dark" });
     },
-    changeDataType(name, dim){
-
-    }
+  
   },
   watch: {
+    //Monitor the positon's change of component
     blueComponents: {
       handler(curVal, oldVal) {
         if (curVal.length == oldVal.length) {
@@ -465,17 +470,20 @@ export default {
             let curEle = curVal[i];
             let preEle = oldVal[i];
 
+            //Obtain the newest postion of each component
             let curPos = curEle.getPos();
             let prePos = preEle.getPos();
 
+            //Update all the line postion via the above positions
             this.blueLines.forEach(function(line) {
               line.parentPosUpdated(
-                curPos.dx,
-                curPos.dy,
+                curPos.dx, //delta of horizon postion
+                curPos.dy, //delta of vertical position
                 curEle.inPorts,
                 curEle.outPorts
               );
 
+              //Reset all the delta postion
               curEle.resetDeltaPos();
               preEle.resetDeltaPos();
             });
@@ -484,13 +492,13 @@ export default {
       },
       deep: true
     },
+
+    //Monitor the bluelines' length, if length increased, the new connection will be parsed
     blueLines: {
       handler(curVal, oldVal) {
-        if (this.connections.length < curVal.length) { 
-
-          let tailNo = curVal.length - 1
+        if (this.connections.length < curVal.length) {
+          let tailNo = curVal.length - 1;
           if (curVal[tailNo].targetPort != "") {
-
             this.connections.push({
               source: curVal[tailNo].sourcePort,
               target: curVal[tailNo].targetPort
@@ -505,37 +513,46 @@ export default {
       },
       deep: true
     },
-    vegaObject:{
 
+    //Monitor the vegaObject, if it updated, the model configuration text will be updated
+    vegaObject: {
       handler(curVal, oldVal) {
-
-        this.model_config_text = JSON.stringify(this.vegaObject.getConfig(), null, 4)
+        this.model_config_text = JSON.stringify(
+          this.vegaObject.getConfig(),
+          null,
+          4
+        );
       },
       deep: true
-      
     }
   },
   mounted() {
     let that = this;
     this.chartInit("#preview");
 
-    d3.selectAll('textarea').style('color','white').style('font-size','16px')
+    //Set the init setting of textarea
+    d3.selectAll("textarea")
+      .style("color", "white")
+      .style("font-size", "16px");
 
+    //Add a listener for window's resize
     window.addEventListener("resize", () => {
       this.chartResize(window.innerWidth * 0.65, window.innerHeight * 0.6);
     });
 
+    //Get the data candidates from server
     dataHelper.getDataList().then(response => {
       this.dataList = response.data;
-      
+
       this.dataList.forEach(function(data) {
         data.dimensions.forEach(function(d) {
           d["checked"] = false;
-          d['color'] = '#202020'
+          d["color"] = "#202020";
         });
       });
     });
 
+    //Global control the animation of line or others
     setInterval(function() {
       that.blueLines.forEach(function(line) {
         line.animate();

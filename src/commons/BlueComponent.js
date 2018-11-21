@@ -61,9 +61,14 @@ export default class BlueComponent {
     }
     setFieldName(name){
 
-        this.outPorts[0].name = name
+        if(this.outPorts.length > 0){
 
-        this.outPorts[0].dimension_type = 'quantitative'
+            this.outPorts[0].name = name
+
+            this.outPorts[0].dimension_type = 'quantitative'
+        }
+
+    
        /* if(this.outPorts.length == 1){
             this.outPorts[0].text = this.outPorts[0].name[0].toUpperCase() + 
             this.outPorts[0].name.slice(1, this.outPorts[0].name.length)
@@ -345,7 +350,7 @@ export default class BlueComponent {
         
         }
 
-        console.log(bins_array)
+        this.filterRange = [min_x, max_x]
 
         let offset = 30
 
@@ -415,6 +420,8 @@ export default class BlueComponent {
         .attr('height',  that.height + 70)
     }
     getFilterRangeAndDim(){
+
+        console.log(this.filterRange, this.dimPreview)
 
         return {'range':this.filterRange,'dim':this.dimPreview}
     }

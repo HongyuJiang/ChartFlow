@@ -6,7 +6,7 @@ export default class VegaModel {
 
         this.data["width"] = width;
         this.data["height"] = height;
-        this.data["spec"] = {'layer':[]};
+        this.data["layer"] = [];
         this.data["repeat"] = {};
         this.data['background'] = '#202020'
         this.config = {}
@@ -53,7 +53,7 @@ export default class VegaModel {
 
             this.layers[parent]['height'] = this.data["height"]
 
-            this.data.spec.layer.push(this.layers[parent])
+            this.data.layer.push(this.layers[parent])
         
         }
         

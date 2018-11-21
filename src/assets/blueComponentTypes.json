@@ -1,18 +1,27 @@
 [
     { 
+        "name": "Data", 
+        "childrens": [],
+        "color": "#F6BB42"
+    }, 
+    { 
         "name": "Chart", 
-        "childrens": ["Barchart", "Linechart", "Scatterplot", "Boxplot", "Stripplot"]
+        "childrens": ["Barchart", "Linechart", "Scatterplot", "Boxplot", "Stripplot"],
+        "color": "#967ADC"
     }, 
     { 
         "name": "Caculator", 
-        "childrens": ["Sum", "Reduce", "Multi"]
+        "childrens": ["Sum", "Reduce", "Multi"],
+        "color": "#37BC9B"
     },  
     { 
         "name": "Processor", 
-        "childrens": ["Filter", "Log"]
+        "childrens": ["Filter", "Log"],
+        "color": "#ffa824"
     },
     { 
         "name": "Connector", 
-        "childrens": ["Left Join", "Right Join", "Inner Join", "Outer Join"]
+        "childrens": ["Left Join", "Right Join", "Inner Join", "Outer Join"],
+        "color": "#704cff"
     }
 ]

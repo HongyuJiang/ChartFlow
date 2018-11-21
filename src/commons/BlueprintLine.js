@@ -19,7 +19,7 @@ export default class BlueprintLine {
         this.existingPort = []
         this.toUpdateSourcePoint = false // false -> update target point / true -> update source point
         this.count = 10000
-        this.animateSpeed = 2
+        this.animateSpeed = 1
         this.coverLine = ''
         this.baseLine = ''
 
@@ -218,7 +218,7 @@ export default class BlueprintLine {
 
         linearGradient.append("stop")
             .attr("offset", "0%")
-            .style("stop-color", '#1473e6');
+            .style("stop-color", '#0DFF9F');
 
        /* linearGradient.append("stop")
             .attr("offset", "50%")
@@ -230,7 +230,7 @@ export default class BlueprintLine {
 
         linearGradient.append("stop")
             .attr("offset", "100%") 
-            .style("stop-color", '#1473e6')
+            .style("stop-color", '#0DFF9F')
 
         //绘制cover曲线
         this.coverLine = this.container.append('path')
@@ -242,7 +242,7 @@ export default class BlueprintLine {
 
         //获取生成曲线长度并设定线段间隔为曲线长度
         totalLength = this.coverLine.node().getTotalLength()
-        this.coverLine.style('stroke-dasharray', totalLength/8 + "," + totalLength/8)
+        this.coverLine.style('stroke-dasharray', 8 + "," + 8)
 
     }
 
