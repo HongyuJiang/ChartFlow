@@ -96,7 +96,7 @@ export default class dataHelper {
             */
             let redata = {},
                 tempdata = [],
-                col = name + '.' + column
+                col = name + '&' + column
 
             let objectKeys = Object.keys(data[0])
             //改变键值 'key' -> 'dataName.key'
@@ -105,7 +105,7 @@ export default class dataHelper {
 
                 for(let j=0; j<objectKeys.length; j++){
                     let key = objectKeys[j],
-                        addKey = name + '.' + objectKeys[j]
+                        addKey = name + '&' + objectKeys[j]
                     if(!obj.hasOwnProperty(addKey) && key != 'StoreId' && key != 'isDelete'){
                         obj[addKey] = d[key]
                     }
@@ -179,7 +179,7 @@ export default class dataHelper {
         },
         getDataNameColoumnsList: function(data, name){
             //构造 dataName + key 属性返回
-            return Object.keys(data[0]).map(x => name + '.' + x)
+            return Object.keys(data[0]).map(x => name + '&' + x)
         }
     }
 

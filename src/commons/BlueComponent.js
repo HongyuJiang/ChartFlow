@@ -427,7 +427,7 @@ export default class BlueComponent {
 
         this.outPorts.forEach(d => {
 
-            d.name = d.parent + '.' + d.name;
+            d.name = d.parent + '&' + d.name;
         })
     }
    
