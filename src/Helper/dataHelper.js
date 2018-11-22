@@ -10,64 +10,6 @@ export default class dataHelper {
         return axios.post('http://localhost:3000/api/getData?dataname=' + dataname);
     }
 
-    static innerJoin(data1, data2){
-
-        let dataName1 = data1.dataName
-        let dataName2 = data2.dataName
-        let column1 = data1.dim
-        let column2 = data2.dim
-        let dataset1 = data1.data
-        let dataset2 = data2.data
-
-        return fakeDataBaseProcess._inner(dataset1, dataName1, dataset2, dataName2, column1, column2)
-    }
-
-    static outerJoin(data1, data2){
-
-        let dataName1 = data1.dataName
-        let dataName2 = data2.dataName
-        let column1 = data1.dim
-        let column2 = data2.dim
-        let dataset1 = data1.data
-        let dataset2 = data2.data
-
-        let innerData = fakeDataBaseProcess._inner(dataset1, dataName1, dataset2, dataName2, column1, column2),
-            leftData = fakeDataBaseProcess._part(dataset1, dataName1, dataset2, dataName2, column1, column2),
-            rightData = fakeDataBaseProcess._part(dataset1, dataName1, dataset2, dataName2, column1, column2)
-
-        return innerData.concat(leftData.concat(rightData)) 
-    }
-
-    static leftJoin(data1, data2){
-
-        let dataName1 = data1.dataName
-        let dataName2 = data2.dataName
-        let column1 = data1.dim
-        let column2 = data2.dim
-        let dataset1 = data1.data
-        let dataset2 = data2.data
-
-        let innerData = fakeDataBaseProcess._inner(dataset1, dataName1, dataset2, dataName2, column1, column2),
-            leftData = fakeDataBaseProcess._part(dataset1, dataName1, dataset2, dataName2, column1, column2)
-
-        return innerData.concat(leftData)
-    }
-
-    static rightJoin(data1, data2){
-
-        let dataName1 = data1.dataName
-        let dataName2 = data2.dataName
-        let column1 = data1.dim
-        let column2 = data2.dim
-        let dataset1 = data1.data
-        let dataset2 = data2.data
-
-        let innerData = fakeDataBaseProcess._inner(dataset1, dataName1, dataset2, dataName2, column1, column2),
-            rightData = fakeDataBaseProcess._part(dataset1, dataName1, dataset2, dataName2, column1, column2)
-
-        return innerData.concat(rightData)
-    }
-
     static fakeDataBaseProcess = {
 
         // innerJoin = _inner
@@ -88,6 +30,8 @@ export default class dataHelper {
                 redata_2 = this.constructToJoinData(data2, column2, dataName2),
                 sameKey = this.findSameKeyinTwoTableColumn(data1, data2, column1, column2),
                 resList = []
+
+            //console.log(redata_1, redata_2, sameKey)
             
             //根据相同Key填充
             sameKey.forEach(function(d,i){
@@ -104,17 +48,19 @@ export default class dataHelper {
                     resList.push(obj)
                 }
             })
+
+            //console.log(resList)
             
             return resList
             //根据sameKey生成合成数据
         },
-        _part: function(data1, data2, column1, column2){
+        _part: function(data1, dataName1, data2, dataName2, column1, column2){
             //用于生成每个数据独有部分
             //left data_1 right data_2
             let diffKey = this.findDiffKeyinTwoTable(data1, data2, column1, column2),
-                redata_1 = this.constructToJoinData(data1, column1),
+                redata_1 = this.constructToJoinData(data1, column1, dataName1),
                 redata = [],
-                redata_2_dataNamelist = this.getDataNameColoumnsList(data2, column2)
+                redata_2_dataNamelist = this.getDataNameColoumnsList(data2,dataName2)
             
             let addObj = {}
             //填充null
@@ -131,6 +77,8 @@ export default class dataHelper {
                     redata.push(Object.assign(obj, addObj))
                 }
             })
+            console.log(redata_1, redata_2_dataNamelist, diffKey)
+
             return redata
         },
         getSameColumns: function(data1, data2){
@@ -151,10 +99,12 @@ export default class dataHelper {
             let redata = {},
                 tempdata = [],
                 col = name + '.' + column
+
+            let objectKeys = Object.keys(data[0])
             //改变键值 'key' -> 'dataName.key'
             data.forEach(function(d,i){
-                let objectKeys = Object.keys(d),
-                    obj = {}
+                let obj = {}
+
                 for(let j=0; j<objectKeys.length; j++){
                     let key = objectKeys[j],
                         addKey = name + '.' + objectKeys[j]
@@ -206,10 +156,13 @@ export default class dataHelper {
             ////在两个表指定列找到不同值 (table1 相对于 table2)
             let data_1_list = this.getColumnAttrUnrepeat(data1, column1),
                 data_2_list = this.getColumnAttrUnrepeat(data2, column2),
-                diffKey = data_1_list.filter(function(v, i, arr){
-                    return arr.indexOf(v) !== data_2_list.lastIndexOf(v);
-                })
-            return diffKey
+                diffKey = data_1_list.filter( x => !data_2_list.includes(x))
+
+            //console.log(diffKey)
+            let redata = [...new Set(diffKey)]
+           // console.log(redata)
+
+            return redata
         },
         getColumnAttrUnrepeat: function(data, column){
             //获取数据某列所有不重复项
@@ -228,8 +181,71 @@ export default class dataHelper {
         },
         getDataNameColoumnsList: function(data, name){
             //构造 dataName + key 属性返回
-            return data.map(x => name + '.' + x)
+
+           // console.log(data[0], Object.keys(data))
+            return Object.keys(data[0]).map(x => name + '.' + x)
         }
     }
+
+    static innerJoin(data1, data2){
+
+        let dataName1 = data1.dataName
+        let dataName2 = data2.dataName
+        let column1 = data1.dim
+        let column2 = data2.dim
+        let dataset1 = data1.data
+        let dataset2 = data2.data
+
+        return this.fakeDataBaseProcess._inner(dataset1, dataName1, dataset2, dataName2, column1, column2)
+    }
+
+    static outerJoin(data1, data2){
+
+        let dataName1 = data1.dataName
+        let dataName2 = data2.dataName
+        let column1 = data1.dim
+        let column2 = data2.dim
+        let dataset1 = data1.data
+        let dataset2 = data2.data
+
+        let innerData = this.fakeDataBaseProcess._inner(dataset1, dataName1, dataset2, dataName2, column1, column2),
+            leftData = this.fakeDataBaseProcess._part(dataset1, dataName1, dataset2, dataName2, column1, column2),
+            rightData = this.fakeDataBaseProcess._part(dataset1, dataName1, dataset2, dataName2, column1, column2)
+
+        return innerData.concat(leftData.concat(rightData)) 
+    }
+
+    static leftJoin(data1, data2){
+
+        console.log(data1, data2)
+
+        let dataName1 = data1.dataName
+        let dataName2 = data2.dataName
+        let column1 = data1.dim
+        let column2 = data2.dim
+        let dataset1 = data1.data
+        let dataset2 = data2.data
+
+        let innerData = this.fakeDataBaseProcess._inner(dataset1, dataName1, dataset2, dataName2, column1, column2),
+            leftData = this.fakeDataBaseProcess._part(dataset1, dataName1, dataset2, dataName2, column1, column2)
+
+        return innerData.concat(leftData)
+    }
+
+    static rightJoin(data1, data2){
+
+        let dataName1 = data1.dataName
+        let dataName2 = data2.dataName
+        let column1 = data1.dim
+        let column2 = data2.dim
+        let dataset1 = data1.data
+        let dataset2 = data2.data
+
+        let innerData = fakeDataBaseProcess._inner(dataset1, dataName1, dataset2, dataName2, column1, column2),
+            rightData = fakeDataBaseProcess._part(dataset1, dataName1, dataset2, dataName2, column1, column2)
+
+        return innerData.concat(rightData)
+    }
+
   
 }

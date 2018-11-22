@@ -393,11 +393,8 @@ export default {
             let data1 = this.dataConnection[keys[0]];
             let data2 = this.dataConnection[keys[1]];
 
-
-            console.log(data1, data2)
-
             if(target.parent == 'Left Join'){
-              dataHelper.leftJoin(data1, data2)
+              console.log(dataHelper.leftJoin(data1, data2))
             }
             else if (target.parent == 'Right Join'){
               dataHelper.rightJoin(data1, data2)
