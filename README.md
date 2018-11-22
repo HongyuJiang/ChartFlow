@@ -6,7 +6,7 @@
 
 ![Teaser](preview1.png)
 
-> A visualization building tool base on vega-lite and the idea sourced by blueprin. Using module components and connection curve to define the data logic, visualiation and user interaction
+> A visualization building tool base on [vega-lite](https://vega.github.io/vega-lite/) and the idea sourced by [Blueprint](https://docs.unrealengine.com/en-us/Engine/Blueprints/GettingStarted). Using module components and connection curve to define the data logic, visualiation and user interaction
 
 ![Demo](demo.gif)
 
