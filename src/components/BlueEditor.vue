@@ -74,7 +74,6 @@
               </vs-collapse >
             
               <vs-button style="width:50%; justify-content: right; float:right;margin-right:15%" color="#ED3500" type="filled" icon="apps">Find more component</vs-button>
-
             </div>
         </vs-col>
     </vs-row>
@@ -86,17 +85,11 @@
              </div>
     </vs-col>
      <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="10">
-             <div id='canvas'>
-          
-             </div>
+             <div id='canvas'> </div>
     </vs-col>
-    
     </vs-row>
 
-    <vs-row vs-h="4">
-
-  
-    </vs-row>
+    <vs-row vs-h="4"></vs-row>
 
 </div>
 
@@ -375,35 +368,78 @@ export default {
           
           await dataHelper.getDataDetail(source.parent).then(function(response) {
 
-            //console.log(response)
-
             that.loadedDatasets[source.parent] = response.data.data.values
           });
           
         }
+
+        console.log('connector')
         
         if (this.dataConnection[source.parent] == undefined){
 
           this.dataConnection[source.parent] = {'data': this.loadedDatasets[source.parent], 'dataName':source.parent, 'dim':source.name}
 
-          if (d3.keys(this.dataConnection).length == 2){
+          let connectionNames = d3.keys(this.dataConnection);
 
-            let keys = d3.keys(this.dataConnection)
+          if (connectionNames.length == 2){
 
-            let data1 = this.dataConnection[keys[0]];
-            let data2 = this.dataConnection[keys[1]];
+            let data1 = this.dataConnection[connectionNames[0]];
+            let data2 = this.dataConnection[connectionNames[1]];
 
             if(target.parent == 'Left Join'){
-              console.log(dataHelper.leftJoin(data1, data2))
+              let newData = dataHelper.leftJoin(data1, data2)
+              this.vegaObject.setData(newData)
+
+              let _com1 = this.getComponentByName(connectionNames[0])
+              let _com2 = this.getComponentByName(connectionNames[1])
+
+              _com1.addDataName2Ports()
+              _com2.addDataName2Ports()
+
+              this.contextData = this.contextData + '.' + source.parent
+
             }
             else if (target.parent == 'Right Join'){
-              dataHelper.rightJoin(data1, data2)
+
+              let newData = dataHelper.rightJoin(data1, data2)
+              this.vegaObject.setData(newData)
+
+              let _com1 = this.getComponentByName(connectionNames[0])
+              let _com2 = this.getComponentByName(connectionNames[1])
+
+              _com1.addDataName2Ports()
+              _com2.addDataName2Ports()
+
+              this.contextData = this.contextData + '.' + source.parent
+
             }
             else if (target.parent == 'Inner Join'){
-              dataHelper.innerJoin(data1, data2)
+
+              let newData = dataHelper.innerJoin(data1, data2)
+              this.vegaObject.setData(newData)
+
+              let _com1 = this.getComponentByName(connectionNames[0])
+              let _com2 = this.getComponentByName(connectionNames[1])
+
+              _com1.addDataName2Ports()
+              _com2.addDataName2Ports()
+
+              this.contextData = this.contextData + '.' + source.parent
+
             }
             else{
-              dataHelper.outerJoin(data1, data2)
+
+              let newData = dataHelper.outerJoin(data1, data2)
+              this.vegaObject.setData(newData)
+
+              let _com1 = this.getComponentByName(connectionNames[0])
+              let _com2 = this.getComponentByName(connectionNames[1])
+
+              _com1.addDataName2Ports()
+              _com2.addDataName2Ports()
+
+              this.contextData = this.contextData + '.' + source.parent
+          
             }
           }
           else if(d3.keys(this.dataConnection).length > 2){
@@ -497,7 +533,10 @@ export default {
         dataNameDict[d.name] = 1;
       });
 
-      if (source.parent in dataNameDict && source.parent != this.contextData) {
+      if (source.parent in dataNameDict 
+      && source.parent != this.contextData 
+      && this.contextData.split('.').length < 2) {
+
         this.contextData = source.parent;
 
         dataHelper.getDataDetail(source.parent).then(function(response) {

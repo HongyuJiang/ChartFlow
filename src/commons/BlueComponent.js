@@ -421,9 +421,14 @@ export default class BlueComponent {
     }
     getFilterRangeAndDim(){
 
-        console.log(this.filterRange, this.dimPreview)
-
         return {'range':this.filterRange,'dim':this.dimPreview}
+    }
+    addDataName2Ports(){
+
+        this.outPorts.forEach(d => {
+
+            d.name = d.parent + '.' + d.name;
+        })
     }
    
 

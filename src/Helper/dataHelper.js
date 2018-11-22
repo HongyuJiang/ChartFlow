@@ -25,8 +25,7 @@ export default class dataHelper {
             //最后根据相同值生成合成数据
             //重复值处理 n*n
             
-            let sameColumns = this.getSameColumns(data1, data2),
-                redata_1 = this.constructToJoinData(data1, column1, dataName1),
+            let redata_1 = this.constructToJoinData(data1, column1, dataName1),
                 redata_2 = this.constructToJoinData(data2, column2, dataName2),
                 sameKey = this.findSameKeyinTwoTableColumn(data1, data2, column1, column2),
                 resList = []
@@ -77,8 +76,7 @@ export default class dataHelper {
                     redata.push(Object.assign(obj, addObj))
                 }
             })
-            console.log(redata_1, redata_2_dataNamelist, diffKey)
-
+           
             return redata
         },
         getSameColumns: function(data1, data2){
@@ -181,8 +179,6 @@ export default class dataHelper {
         },
         getDataNameColoumnsList: function(data, name){
             //构造 dataName + key 属性返回
-
-           // console.log(data[0], Object.keys(data))
             return Object.keys(data[0]).map(x => name + '.' + x)
         }
     }
@@ -217,8 +213,6 @@ export default class dataHelper {
 
     static leftJoin(data1, data2){
 
-        console.log(data1, data2)
-
         let dataName1 = data1.dataName
         let dataName2 = data2.dataName
         let column1 = data1.dim
@@ -234,17 +228,7 @@ export default class dataHelper {
 
     static rightJoin(data1, data2){
 
-        let dataName1 = data1.dataName
-        let dataName2 = data2.dataName
-        let column1 = data1.dim
-        let column2 = data2.dim
-        let dataset1 = data1.data
-        let dataset2 = data2.data
-
-        let innerData = fakeDataBaseProcess._inner(dataset1, dataName1, dataset2, dataName2, column1, column2),
-            rightData = fakeDataBaseProcess._part(dataset1, dataName1, dataset2, dataName2, column1, column2)
-
-        return innerData.concat(rightData)
+        leftJoin(data2, data1)
     }
 
   

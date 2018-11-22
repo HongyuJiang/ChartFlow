@@ -27,6 +27,8 @@ export default class VegaModel {
     }
     setData(values){
 
+        console.log('data setted', values)
+
         this.data['data'] = {}
 
         this.data['data']['values'] = values
@@ -101,23 +103,7 @@ export default class VegaModel {
 
     getOutputForced(){
 
-        /*let data = this.data
-
-        let layers = this.data.spec.layer
-
-        for(name in this.layers){
-
-            let layer = this.layers[name]
-
-            layer['width'] = this.data["width"]
-
-            layer['height'] = this.data["height"]
-
-            layers.push(layer)
-
-        }
-
-        data.layer = layers*/
+        console.log(this.data)
 
         return this.data
     }
