@@ -6,11 +6,7 @@
 
 ![Teaser](preview1.png)
 
-> A visualization building tool base on vega-lite and the idea sourced by blueprint
-
-![Teaser](preview2.png)
-
-> Using module components and connection curve to define the data logic, visualiation and user interaction
+> A visualization building tool base on vega-lite and the idea sourced by blueprin. Using module components and connection curve to define the data logic, visualiation and user interaction
 
 ![Demo](demo.gif)
 
