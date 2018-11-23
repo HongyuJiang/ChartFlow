@@ -5,27 +5,25 @@ export default class BlueComponent {
     constructor(canvas, options) {
         
         let that = this
-        this.fill = '#F6BB42'
+        this.fill = '#F6BB42' 
         this.stroke = 'none'
         this.name = 'UNAMED'
-        this.type = 'default'
-        this.inPorts = []
-        this.outPorts = []
-        this.conenctions = []
+        this.type = 'default' 
+        this.inPorts = [] //Inports of component
+        this.outPorts = [] //Outports of component
         this.property = {}
         this.width = 180
-        this.dx = 0
-        this.dy = 0
-        this.x = 300 * Math.random() + 100
-        this.y = 100 * Math.random() + 100
-        this.dimPreview = ''
-        this.filterRange = []
+        this.dx = 0 //Horizonal delta
+        this.dy = 0 //Vertical delta
+        this.x = 300 * Math.random() + 100 //Init horizonal position
+        this.dimPreview = '' 
+        this.filterRange = [] //If there have filter plug in component 
 
         for(let key in options){
-            this[key] = options[key]
+            this[key] = options[key] //Set the initial parameter
         }
 
-        this.width = this.name.length > 15 ? this.name.length * 10 : 180
+        this.width = this.name.length > 15 ? this.name.length * 10 : 180 
         this.height = this.inPorts.length > this.outPorts.length ? 50 + this.inPorts.length * 30 : 50 + this.outPorts.length * 30
 
         this.canvas = canvas
@@ -37,6 +35,9 @@ export default class BlueComponent {
             return 'translate(' + d.x + ',' + d.y + ')'
         })
 
+        ////////////////////////////////
+        ///Add drag event to component
+        ///////////////////////////////
         this.container.call(d3.drag()
             .on("start", function(d){
                 that.dragstarted(this, d)
@@ -50,15 +51,18 @@ export default class BlueComponent {
             
         this.draw()
     }
+    //Get the current position and delta translation
     getPos(){
 
         return {'x':this.x,'y':this.y, 'dx':this.dx, 'dy':this.dy}
     }
+    //reset the delta translation
     resetDeltaPos(){
 
         this.dx = 0
         this.dy = 0
     }
+    //After been connected by curve, the port name 
     setFieldName(name){
 
         if(this.outPorts.length > 0){
@@ -75,6 +79,7 @@ export default class BlueComponent {
             this.outPorts[0].dimension_type = 'quantitative'
         }*/
     }
+    //Add a new port to component
     addPort(type, port){
 
         port.text = port.text[0].toUpperCase() + port.text.slice(1, port.text.length)
@@ -88,17 +93,7 @@ export default class BlueComponent {
 
         this.redraw()
     }
-    updatePosition(x, y){
-        this.x = x;
-        this.y = y;
-    }
-    updateProperty(options){
-
-        for(let key in options){
-            this.property[key] = options[key]
-        }
-        this.draw()
-    }
+    //Draw the back retangle
     drawBack(height){
         
         this.container
@@ -237,7 +232,7 @@ export default class BlueComponent {
         this.drawTitle()
     }
     dragstarted(node, d) {
-        d3.select(node).raise().classed("active", true);
+       // d3.select(node).raise().classed("active", true);
     }
     dragged(node, d){ 
 
@@ -261,11 +256,12 @@ export default class BlueComponent {
     dragended(node,d) {
         d3.select(node).classed("active", false);
     }
-
+    //Get all the ports' circles
     getAllCircles(){
 
         return this.container.selectAll('.port')
     }
+    //Get all the ports
     getAllPorts(){
 
         let that = this
@@ -290,6 +286,7 @@ export default class BlueComponent {
         })
         return ret
     }
+    //Shows the data distribution in component
     showDataPreview(data, dim){
 
         this.dimPreview = dim
@@ -419,10 +416,12 @@ export default class BlueComponent {
         .transition()
         .attr('height',  that.height + 70)
     }
+    //Get the selected range of users' filter operation
     getFilterRangeAndDim(){
 
         return {'range':this.filterRange,'dim':this.dimPreview}
     }
+    //After data joined, add the data name to the ports' name 
     addDataName2Ports(){
 
         this.outPorts.forEach(d => {

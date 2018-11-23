@@ -1,5 +1,7 @@
 export default class processor_modules {
 
+
+    //Data filter, global data will be updated
     static filter(data, range, dim){
 
         let newName = 'filtered_' + dim
@@ -16,6 +18,7 @@ export default class processor_modules {
         return {'data':newData,'name':newName}
         
     }
+    //Data normalizer, the global data will be normalized
     static log(data,dim,base){
 
         let logged_name = 'log_' + dim

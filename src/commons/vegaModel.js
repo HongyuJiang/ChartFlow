@@ -34,6 +34,8 @@ export default class VegaModel {
         this.data['data']['values'] = values
 
     }
+
+    //Set the encoding rule, if there are one more layer, the encoding will add to corresponding with layer ID
     setEncoding(parent, rule){
 
         if(parent in this.layers){
@@ -101,12 +103,15 @@ export default class VegaModel {
         return 'wrong argument'
     }
 
+    //Output vega configuration and without check
     getOutputForced(){
 
         console.log(this.data)
 
         return this.data
     }
+
+    //Get the vega configuration without detail data
     getConfig(){
 
         for(let key in this.data){
