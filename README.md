@@ -6,11 +6,20 @@
 
 ![Teaser](preview1.png)
 
-> A visualization building tool base on Vega-lite and blueprint
-
-![Teaser](preview2.png)
+> A visualization building tool base on [vega-lite](https://vega.github.io/vega-lite/) and the idea sourced by [Blueprint](https://docs.unrealengine.com/en-us/Engine/Blueprints/GettingStarted). Using module components and connection curve to define the data logic, visualiation and user interaction
 
 ![Demo](demo.gif)
+
+## Functions
+
+- Data Connector (Outer Join, Inner Join)
+- Data Processor (Filter, Normalizer)
+- Data Calculator (Sum, Reduce and Multi)
+- Data Visualizer (Barchart, Linechart, Scatterplot, Boxplot, Stripplot)
+
+## Roadmap
+
+TBA
 
 ## Build Setup
 ``` bash
