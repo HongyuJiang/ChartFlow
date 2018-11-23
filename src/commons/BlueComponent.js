@@ -16,6 +16,7 @@ export default class BlueComponent {
         this.dx = 0 //Horizonal delta
         this.dy = 0 //Vertical delta
         this.x = 300 * Math.random() + 100 //Init horizonal position
+        this.y = 100 * Math.random() + 100 //Init vertical position
         this.dimPreview = '' 
         this.filterRange = [] //If there have filter plug in component 
 
