@@ -18,7 +18,8 @@ export default class BlueComponent {
         this.x = 300 * Math.random() + 100 //Init horizonal position
         this.y = 100 * Math.random() + 100 //Init vertical position
         this.dimPreview = '' 
-        this.filterRange = [] //If there have filter plug in component 
+        this.filterRange = [] //If there have filter plug in component
+        this.isDelete = false
 
         for(let key in options){
             this[key] = options[key] //Set the initial parameter
@@ -34,6 +35,10 @@ export default class BlueComponent {
         .append('g')
         .attr('transform', function(d){
             return 'translate(' + d.x + ',' + d.y + ')'
+        })
+        .on('dblclick', function(d){
+
+            that.remove()
         })
 
         ////////////////////////////////
@@ -429,6 +434,15 @@ export default class BlueComponent {
 
             d.name = d.parent + '&' + d.name;
         })
+    }
+    remove(){
+
+        console.log('remove')
+
+        this.container.remove()
+
+        this.isDelete = true
+
     }
    
 

@@ -2,10 +2,9 @@
 import * as d3 from 'd3'
 
 export default class BlueprintLine {
-    constructor(container, point, source) {
+    constructor(container, parent, point, source) {
 
         //points [x,y]
-        let that = this
         this.sourcePoint = point
         this.sourcePort = source
         this.targetPort = ''
@@ -22,8 +21,10 @@ export default class BlueprintLine {
         this.animateSpeed = 1
         this.coverLine = ''
         this.baseLine = ''
-
+        this.sourceParent = parent
+        this.targetParent = ''
         this.pathCount++
+        this.isDeleted = false
     
     }
     parentPosUpdated(dx, dy, inPorts, outPorts) {
@@ -77,7 +78,7 @@ export default class BlueprintLine {
                     (y - point[1]) * (y - point[1])
 
                 if (dis < 400) {
-                    nearPoints.push({ 'dis': dis, 'port': port, 'pos': [x, y] })
+                    nearPoints.push({ 'dis': dis, 'port': port, 'pos': [x, y]})
                 }
             })
 
@@ -90,6 +91,7 @@ export default class BlueprintLine {
                 that.container.on('mousemove.circle', null)
               
                 that.targetPort = nearPoints[0].port
+                that.targetParent = nearPoints[0].port.parent
                 that.storePoints[1] = nearPoints[0].pos
 
                 that.generateAnimateCoverCurveLine()
@@ -195,7 +197,6 @@ export default class BlueprintLine {
 
             this.coverLine.attr('d', pathData)
         }
-    
     }
 
     generateAnimateCoverCurveLine() {
@@ -204,8 +205,7 @@ export default class BlueprintLine {
         let points = this.calculateCurvePointInterpolation(this.storePoints)
         let lineGenerator = d3.line().curve(d3.curveBasis),
             pathData = lineGenerator(points),
-            curveWidth = '3px',
-            totalLength = 0
+            curveWidth = '3px'
 
         //生成渐变
         let defs = this.container.append('defs')
@@ -241,7 +241,7 @@ export default class BlueprintLine {
             .attr('stroke-width', curveWidth)
 
         //获取生成曲线长度并设定线段间隔为曲线长度
-        totalLength = this.coverLine.node().getTotalLength()
+        let totalLength = this.coverLine.node().getTotalLength()
         this.coverLine.style('stroke-dasharray', 8 + "," + 8)
 
     }
@@ -331,6 +331,21 @@ export default class BlueprintLine {
        
         let p = this.calculateCurvePointInterpolation(this.storePoints)
         this.generateCurveLine(p)
+    }
+    remove(parent){
+
+        console.log(this.targetParent, this.sourceParent, parent)
+
+        if(this.targetParent == parent || this.sourceParent == parent){
+
+            this.baseLine.remove()
+            this.coverLine.remove()
+            this.isDeleted = true
+
+            return true
+        }
+
+        return false
     }
 
 }

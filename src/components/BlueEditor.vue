@@ -235,6 +235,7 @@ export default {
 
         let line = (that.drawingLine = new BlueprintLine(
           that.container,
+          com.name,
           [x, y],
           d
         ));
@@ -248,10 +249,12 @@ export default {
           let ports = component.getAllPorts();
           if (d.type == "in") {
             ports["outPorts"].forEach(function(d) {
+              d.parent = component.name
               allPorts.push(d);
             });
           } else {
             ports["inPorts"].forEach(function(d) {
+              d.parent = component.name
               allPorts.push(d);
             });
           }
@@ -349,13 +352,9 @@ export default {
 
           let newData = result.data,
             newName = result.name;
-
           this.vegaObject.setData(newData);
-
           caculator_modules.resetOperators();
-
           let _com = this.getComponentByName(target.parent);
-
           _com.setFieldName(newName);
         }
       }
@@ -373,8 +372,6 @@ export default {
           
         }
 
-        console.log('connector')
-        
         if (this.dataConnection[source.parent] == undefined){
 
           this.dataConnection[source.parent] = {'data': this.loadedDatasets[source.parent], 'dataName':source.parent, 'dim':source.name}
@@ -473,9 +470,7 @@ export default {
           );
 
           this.vegaObject.setData(result.data);
-
           let _com = this.getComponentByName(target.parent);
-
           _com.setFieldName(result.name);
         }
       }
@@ -494,9 +489,7 @@ export default {
           ).getFilterRangeAndDim();
 
           let range = ret.range;
-
           let dimPreview = ret.dim;
-
           let result = processor_modules.filter(
             this.vegaObject.getData(),
             range,
@@ -504,7 +497,6 @@ export default {
           );
 
           this.vegaObject.setData(result.data);
-
           let maker = this.modelConfig[target.parent].maker;
 
           this.vegaObject.setEncoding(target.parent, meta);
@@ -553,14 +545,47 @@ export default {
       //Show the result in bottom canvas via vage compilier
       vegaEmbed("#canvas", result, { theme: "dark" });
     },
+    connectionRemove(connect){
+      
+    }
   
   },
   watch: {
     //Monitor the positon's change of component
     blueComponents: {
       handler(curVal, oldVal) {
+
+        let that = this
+
         if (curVal.length == oldVal.length) {
-          for (let i = 0; i < curVal.length; i++) {
+          for (let i = 0; i < this.blueComponents.length; i++) {
+            if(this.blueComponents[i].isDelete){
+
+              //console.log(this.blueLines)
+
+              let filterID = this.blueLines.filter(function(line, j){
+
+                if(line.remove(that.blueComponents[i].name)){
+
+                  that.connections.splice(j,1)
+
+                  return true
+                }
+
+                return false
+              })
+
+              filterID.forEach(d=>{
+
+                this.blueLines.splice(d,1)
+              })
+
+              //console.log(this.blueLines)
+
+              this.blueComponents.splice(i,1)
+              break;
+            }
+
             let curEle = curVal[i];
             let preEle = oldVal[i];
 
@@ -604,8 +629,42 @@ export default {
             });
           }
         }
+
+        /*if(this.connections.length == curVal.length){
+          for (let i = 0; i < this.blueLines.length; i++) {
+             if(this.blueLines[i].isDelete){
+              this.blueLines.splice(i,1)
+
+              break;
+            }
+          }
+        }*/
       },
       deep: true
+    },
+
+    //Monitor the connections' change
+    connections: {
+
+      handler(curVal, oldVal) {
+
+        //if (oldVal.length != curVal.length) {'
+        
+        let that = this
+
+          this.vegaObject.reset()
+
+          this.connections.forEach(function(conn){
+
+            that.connectionParse(conn)
+          })
+
+          //let result = this.vegaObject.getOutputForced();
+          //vegaEmbed("#canvas", result, { theme: "dark" });
+
+        //}
+      },
+      deep:false
     },
 
     //Monitor the vegaObject, if it updated, the model configuration text will be updated

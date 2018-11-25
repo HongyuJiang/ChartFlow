@@ -7,7 +7,6 @@ export default class VegaModel {
         this.data["width"] = width;
         this.data["height"] = height;
         this.data["layer"] = [];
-        this.data["repeat"] = {};
         this.data['background'] = '#202020'
         this.config = {}
       
@@ -26,8 +25,6 @@ export default class VegaModel {
         return this.data['data']['values']
     }
     setData(values){
-
-        console.log('data setted', values)
 
         this.data['data'] = {}
 
@@ -60,6 +57,8 @@ export default class VegaModel {
             this.data.layer.push(this.layers[parent])
         
         }
+
+        console.log(this.data.layer)
         
     }
     setDescription(text){
@@ -83,8 +82,6 @@ export default class VegaModel {
             let stroke = ''
             this.layers[parent].mark = {'type':mark,'fill':fill, 'stroke':stroke}
         }*/
-
-        
 
     }
     getOutput(){
@@ -123,5 +120,11 @@ export default class VegaModel {
         }
 
         return this.config
+    }
+    reset(){
+
+        this.data["layer"] = [];
+        //this.data["data"] = {};
+        this.layers = {}
     }
 }
