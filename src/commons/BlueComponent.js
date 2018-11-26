@@ -5,6 +5,7 @@ export default class BlueComponent {
     constructor(canvas, options) {
         
         let that = this
+        this.frame = 2
         this.fill = '#F6BB42' 
         this.stroke = 'none'
         this.name = 'UNAMED'
@@ -20,6 +21,7 @@ export default class BlueComponent {
         this.dimPreview = '' 
         this.filterRange = [] //If there have filter plug in component
         this.isDelete = false
+        this.delta = 0.1
 
         for(let key in options){
             this[key] = options[key] //Set the initial parameter
@@ -61,6 +63,23 @@ export default class BlueComponent {
     getPos(){
 
         return {'x':this.x,'y':this.y, 'dx':this.dx, 'dy':this.dy}
+    }
+    animate(){
+
+        if(this.frame > 8){
+
+            this.delta = this.delta * -1
+        }
+        else if(this.frame < 2){
+
+            this.delta = this.delta * -1
+        }
+
+        this.frame += this.delta
+
+       // console.log(this.frame)
+
+        this.container.select('#glow').select('feGaussianBlur').attr('stdDeviation', this.frame)
     }
     //reset the delta translation
     resetDeltaPos(){
@@ -112,6 +131,29 @@ export default class BlueComponent {
         .attr('fill', this.fill)
         .attr('stroke', this.stroke)
         .attr('stroke-width', 2)
+
+        //Container for the gradients
+        var defs = this.container.append("defs");
+
+        //Filter for the outside glow
+        var filter = defs.append("filter")
+            .attr("id","glow");
+
+        filter.append("feGaussianBlur")
+            .attr("stdDeviation","2")
+            .attr("result","coloredBlur");
+
+        var feMerge = filter.append("feMerge");
+
+        feMerge.append("feMergeNode")
+            .attr("in","coloredBlur");
+
+        feMerge.append("feMergeNode")
+            .attr("in","SourceGraphic");
+
+        //Apply to your element(s)
+        this.container.selectAll(".back")
+        .style("filter", "url(#glow)");
     }
     redraw(){
         
@@ -295,7 +337,7 @@ export default class BlueComponent {
     //Shows the data distribution in component
     showDataPreview(data, dim){
 
-        console.log(data)
+        //console.log(data)
 
         this.container.selectAll('.showPanel').remove()
 
@@ -306,8 +348,8 @@ export default class BlueComponent {
         let that = this
         let bins = {}
 
-        let data_max = d3.max(data, d => d[dim])
-        let data_min = d3.min(data, d => d[dim])
+        let data_max = d3.max(data, d => parseFloat(d[dim]))
+        let data_min = d3.min(data, d => parseFloat(d[dim]))
 
         let factor = (data_max - data_min) / 20
 
@@ -325,12 +367,16 @@ export default class BlueComponent {
                 bins[q] = 1
         })
 
+        console.log('bins', bins)
+
         let bins_array = []
 
         for(let key in bins){
 
-            bins_array.push({'key': key * factor + data_min, 'value': bins[key]})
+            bins_array.push({'key': parseInt(key) * factor + data_min, 'value': bins[key]})
         }
+
+        console.log('array', bins_array)
 
         let max_x = d3.max(bins_array, d => d.key)
         let min_x = d3.min(bins_array, d => d.key)
@@ -339,7 +385,6 @@ export default class BlueComponent {
         let min_y = d3.min(bins_array, d => d.value)
 
         if(max_y == min_y) min_y -= 1
-
 
         let x_scale = d3.scaleLinear()
         .domain([min_x, max_x])
@@ -370,11 +415,16 @@ export default class BlueComponent {
         .attr('y2', that.height + offset)
         .attr('stroke','black')
 
+        console.log(data)
+
         let binsChart = this.container.selectAll('bins')
         .data(bins_array)
         .enter()
         .append('rect')
-        .attr('x', d => x_scale(d.key) + that.width * 0.1)
+        .attr('x', d => {
+            console.log(d.key, x_scale(d.key))
+            return x_scale(d.key) + that.width * 0.1
+        })
         .attr('y', d => that.height + offset - y_scale(d.value) / 2)
         .attr('width', d => 70 / bins_array.length)
         .attr('height', function(d){

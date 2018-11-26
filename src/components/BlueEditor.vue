@@ -717,6 +717,10 @@ export default {
       that.blueLines.forEach(function(line) {
         line.animate();
       });
+
+      that.blueComponents.forEach(function(com) {
+        com.animate();
+      });
     }, 20);
   }
 };
