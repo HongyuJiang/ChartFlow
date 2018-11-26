@@ -295,6 +295,12 @@ export default class BlueComponent {
     //Shows the data distribution in component
     showDataPreview(data, dim){
 
+        console.log(data)
+
+        this.container.selectAll('.showPanel').remove()
+
+        let showPanel = this.container.append('g').attr('class','showPanel')
+
         this.dimPreview = dim
              
         let that = this
@@ -357,7 +363,7 @@ export default class BlueComponent {
 
         let offset = 30
 
-        this.container.append('line')
+        showPanel.append('line')
         .attr('x1', that.width * 0.1)
         .attr('y1', that.height + offset)
         .attr('x2', that.width * 0.9)
@@ -382,7 +388,7 @@ export default class BlueComponent {
         .attr('delay', 500)
         .attr('height', d => y_scale(d.value))
 
-        this.container.append('text')
+        showPanel.append('text')
         .attr('x', that.width * 0.1)
         .attr('y', that.height + offset)
         .attr('alignment-baseline', 'central')
@@ -390,14 +396,14 @@ export default class BlueComponent {
         .attr('fill','white')
         .text(parseInt(min_x))
 
-        this.container.append('text')
+        showPanel.append('text')
         .attr('x', that.width * 0.9)
         .attr('y', that.height + offset)
         .attr('alignment-baseline', 'central')
         .attr('fill','white')
         .text(parseInt(max_x))
 
-        this.container.append('text')
+        showPanel.append('text')
         .attr('x', that.width * 0.5)
         .attr('y', that.height + offset + 25)
         .attr('text-anchor','center')
@@ -405,7 +411,7 @@ export default class BlueComponent {
         .attr('fill','white')
         .text(parseInt(min_y))
 
-        this.container.append('text')
+        showPanel.append('text')
         .attr('x', that.width * 0.5)
         .attr('y', that.height + offset - 25)
         .attr('text-anchor','center')
@@ -413,12 +419,12 @@ export default class BlueComponent {
         .attr('fill','white')
         .text(parseInt(max_y))
 
-        this.container.append("g")
+        showPanel.append("g")
         .attr("class", "brush")
         .call(brush)
         .attr('transform','translate(0,' + that.height + ')')
 
-        that.container.selectAll('.back')
+        this.container.selectAll('.back')
         .transition()
         .attr('height',  that.height + 70)
     }
@@ -436,9 +442,6 @@ export default class BlueComponent {
         })
     }
     remove(){
-
-        console.log('remove')
-
         this.container.remove()
 
         this.isDelete = true

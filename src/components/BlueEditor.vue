@@ -124,7 +124,7 @@ export default {
       connections: [], //Store the connections between component which connected by curve
       mouseAction: "", //mouse action label which used to change the mouse action state
       drawingLine: "", //The line which is being darwing by user
-      vegaObject: "", //The vege model configuration
+      vegaObject: '', //The vege model configuration
       contextData: "", //Shows which dataset which is using in blueprint
       dataTypes: config.typesPrefab, //Store all the data type which supported by vega-lite
       model_config_text: "", //The text which translated by vega-lite model
@@ -144,6 +144,8 @@ export default {
       this.container = d3.select("#editorborad");
       this.container.append("g").attr("id", "grid_layer");
       this.chartResize(window.innerWidth * 0.65, window.innerHeight * 0.6);
+
+      this.vegaObject = new VegaModel(parseInt(this.height / 2), parseInt(this.width * 1.1), "Test")
     },
 
     //Darwing the grids line in canvas which help user the recognize the canvas and components
@@ -201,6 +203,7 @@ export default {
       let _com = new BlueComponent(this.container, properties);
       this.addClickEvent2Circle(_com);
       this.blueComponents.push(_com);
+
     },
 
     //find the component by the component's name
@@ -274,6 +277,8 @@ export default {
     dimensionSelected(source, dim) {
       dim.checked = !dim.checked;
 
+      let that = this
+
       if (dim.checked == true) dim.color = "#808080";
       else dim.color = "#202020";
 
@@ -315,6 +320,15 @@ export default {
         this.dataComponent[source] = _com;
         this.addClickEvent2Circle(_com);
         this.blueComponents.push(_com);
+  
+        if (!(source in this.loadedDatasets)){
+
+          dataHelper.getDataDetail(source).then(function(response) {
+            that.vegaObject.setData(response.data.data.values);
+            //console.log('response', response)
+            that.loadedDatasets[source] = response.data.data.values
+          });
+        }
       }
     },
 
@@ -453,9 +467,12 @@ export default {
       if (source.attr == "field" && target.attr == "processor") {
         let sourcePortName = source.name;
 
+       // console.log(this.loadedDatasets, this.contextData)
+
         if (target.parent == "Filter") {
           this.getComponentByName(target.parent).showDataPreview(
-            this.vegaObject.getData(),
+
+            this.loadedDatasets[this.contextData],
             sourcePortName
           );
 
@@ -510,13 +527,7 @@ export default {
       let that = this;
 
       //If there is none vegaObject created, new one
-      if (this.vegaObject == "")
-        this.vegaObject = new VegaModel(
-          parseInt(this.height / 2),
-          parseInt(this.width * 1.1),
-          "Test"
-        );
-
+    
       let source = connect.source;
       let target = connect.target;
 
@@ -530,12 +541,8 @@ export default {
       && this.contextData.split('.').length < 2) {
 
         this.contextData = source.parent;
-
-        dataHelper.getDataDetail(source.parent).then(function(response) {
-          that.vegaObject.setData(response.data.data.values);
-          that.setVegaConfig(source, target);
-          that.loadedDatasets[response.data.name] = response.data.data.values
-        });
+        that.setVegaConfig(source, target);
+    
       } else {
         that.setVegaConfig(source, target);
       }
@@ -575,7 +582,7 @@ export default {
                 return false
               })
 
-              filterID.forEach(d=>{
+              filterID.forEach(d => {
 
                 this.blueLines.splice(d,1)
               })
