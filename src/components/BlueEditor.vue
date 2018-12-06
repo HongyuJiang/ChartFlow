@@ -80,8 +80,8 @@
 
     <vs-row vs-h="4">
       <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="2">
-             <div id='infoPanel' style='height:500px'>
-                <vs-textarea style='color:white; height:500px' cols="100" rows="25" color='white' v-model="model_config_text" />
+             <div id='infoPanel' style='height:450px'>
+                <vs-textarea style='color:white; height:450px' cols="100" rows="23" color='white' v-model="model_config_text" />
              </div>
     </vs-col>
      <vs-col vs-type="flex" vs-justify="center" vs-align="top" vs-w="10">
@@ -145,7 +145,7 @@ export default {
       this.container.append("g").attr("id", "grid_layer");
       this.chartResize(window.innerWidth * 0.65, window.innerHeight * 0.6);
 
-      this.vegaObject = new VegaModel(parseInt(this.height / 2), parseInt(this.width * 1.1), "Test")
+      this.vegaObject = new VegaModel(parseInt(this.height / 2.3), parseInt(this.width * 1.1), "Test")
     },
 
     //Darwing the grids line in canvas which help user the recognize the canvas and components

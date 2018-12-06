@@ -70,18 +70,31 @@ export default class VegaModel {
 
         this.layers[parent].mark = mark
 
-        /*if(mark == 'line'){
+        if(mark == 'line'){
 
             let fill = ''
-            let stroke = '#ED3500'
-            this.layers[parent].mark = {'type':mark,'fill':fill, 'stroke':stroke}
+            let stroke = '#FE7F2D'
+            this.layers[parent].mark = {'type':mark, 'fill':fill, 'stroke':stroke}
         }
-        else{
+        else if(mark == 'bar'){
 
-            let fill = '#1473e6'
+            let fill = '#FCCA46'
             let stroke = ''
-            this.layers[parent].mark = {'type':mark,'fill':fill, 'stroke':stroke}
-        }*/
+            this.layers[parent].mark = {'type':mark, 'fill':fill, 'stroke':stroke}
+        }
+        else if(mark == 'point'){
+
+            let fill = '#A1C181'
+            let stroke = '#fff'
+            this.layers[parent].mark = {'type':mark, 'fill':fill, 'stroke':stroke}
+        }
+        else if(mark == 'boxplot'){
+
+            let fill = '#57EC87'
+            let stroke = '#fff'
+            let opacity = '0.7'
+            this.layers[parent].mark = {'type':mark, 'fill':fill, 'stroke':stroke, 'opacity': opacity}
+        }
 
     }
     getOutput(){

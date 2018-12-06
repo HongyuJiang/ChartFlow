@@ -19,9 +19,12 @@ export default class BlueComponent {
         this.x = 300 * Math.random() + 100 //Init horizonal position
         this.y = 100 * Math.random() + 100 //Init vertical position
         this.dimPreview = '' 
-        this.filterRange = [] //If there have filter plug in component
+        this.filterRange = [] //If there have a filter plug in component
         this.isDelete = false
         this.delta = 0.1
+        this.dividingLine = ''
+        this.time = 1
+        this.isLoading = true
 
         for(let key in options){
             this[key] = options[key] //Set the initial parameter
@@ -66,6 +69,10 @@ export default class BlueComponent {
     }
     animate(){
 
+        let that = this
+
+        this.time += 1
+
         if(this.frame > 8){
 
             this.delta = this.delta * -1
@@ -77,9 +84,27 @@ export default class BlueComponent {
 
         this.frame += this.delta
 
-       // console.log(this.frame)
-
         this.container.select('#glow').select('feGaussianBlur').attr('stdDeviation', this.frame)
+
+
+        let lineGenerator = d3.line()
+        .x(d => d.x)
+        .y(d => d.y)
+        .curve(d3.curveBasis)
+
+        let linePoint = d3.range(0,11).map(function(d){
+            return {'x': d * (that.width/10), 'y': 30}
+        })
+
+        let height = 30
+
+        //linePoint.forEach(d => d.y = (Math.sin(d.x / 10 + this.time/20)) * height/6 + height)
+
+        //linePoint[8].y = 30 - this.frame * 2
+
+        this.dividingLine
+        .attr('d',lineGenerator(linePoint))
+        
     }
     //reset the delta translation
     resetDeltaPos(){
@@ -252,6 +277,9 @@ export default class BlueComponent {
         })
     }
     drawTitle(){
+
+        let that = this
+
         this.container
         .append('text')
         .attr('x', this.width/2)
@@ -260,15 +288,22 @@ export default class BlueComponent {
         .attr('fill','white')
         .text(this.name.toUpperCase())
 
-        this.container
-        .append('line')
-        .attr('x1', 0)
-        .attr('y1', 30)
-        .attr('x2', this.width)
-        .attr('y2', 30)
-        .attr('stroke','#666')
+        let lineGenerator = d3.line()
+        .x(d => d.x)
+        .y(d => d.y)
+        .curve(d3.curveBasis)
+
+        let linePoint = d3.range(0,11).map(function(d){
+
+            return {'x': d * (that.width/10), 'y': 30}
+        })
+
+        this.dividingLine = this.container
+        .append('path')
+        .attr('d',lineGenerator(linePoint))
+        .attr('stroke','#fff')
+        .attr('fill','none')
         .attr('stroke-width','2')
-        .attr('font-size','14')
        
     }
     draw(){
@@ -277,7 +312,7 @@ export default class BlueComponent {
         this.drawTitle()
         this.drawInPorts()
         this.drawOutPorts()
-        this.drawTitle()
+
     }
     dragstarted(node, d) {
        // d3.select(node).raise().classed("active", true);
@@ -339,9 +374,12 @@ export default class BlueComponent {
 
         //console.log(data)
 
-        this.container.selectAll('.showPanel').remove()
+        if(!this.container.select('#showPanel').empty()){
 
-        let showPanel = this.container.append('g').attr('class','showPanel')
+            return 
+        }
+
+        let showPanel = this.container.append('g').attr('id','showPanel')
 
         this.dimPreview = dim
              
@@ -355,7 +393,9 @@ export default class BlueComponent {
 
         let brush = d3.brushX()
             .extent([[this.width * 0.1, 10], [this.width * 0.9, 50]])
-            .on("brush end", brushed);
+            .on("brush end", function(d){
+                brushed(that)
+            });
   
         data.forEach(function(d){
 
@@ -367,7 +407,6 @@ export default class BlueComponent {
                 bins[q] = 1
         })
 
-        console.log('bins', bins)
 
         let bins_array = []
 
@@ -375,8 +414,6 @@ export default class BlueComponent {
 
             bins_array.push({'key': parseInt(key) * factor + data_min, 'value': bins[key]})
         }
-
-        console.log('array', bins_array)
 
         let max_x = d3.max(bins_array, d => d.key)
         let min_x = d3.min(bins_array, d => d.key)
@@ -388,20 +425,30 @@ export default class BlueComponent {
 
         let x_scale = d3.scaleLinear()
         .domain([min_x, max_x])
-        .range([0, that.width * 0.8])
+        .range([that.width * 0.1, that.width * 0.9])
 
         let y_scale = d3.scaleLinear()
         .domain([min_y, max_y])
         .range([0,40])
 
-        function brushed(){
+        function brushed(that){
+
             if (!d3.event.sourceEvent) return; // Only transition after input.
             if (!d3.event.selection) return; // Ignore empty selections.
 
-                let selection = d3.event.selection || x_scale.range();
-                let range = selection.map(x_scale.invert, x_scale);
-                that.filterRange = range
-        
+            let selection = d3.event.selection || x_scale.range();
+            let range = selection.map(x_scale.invert, x_scale);
+            that.filterRange = range
+
+            that.container.selectAll('.binRect').attr('fill', function(d){
+
+                if(d.key <= that.filterRange[1] && d.key >= that.filterRange[0]){
+
+                    return 'steelblue'
+                }
+
+                return '#ccc'
+            })
         }
 
         this.filterRange = [min_x, max_x]
@@ -415,15 +462,18 @@ export default class BlueComponent {
         .attr('y2', that.height + offset)
         .attr('stroke','black')
 
-        console.log(data)
-
-        let binsChart = this.container.selectAll('bins')
+        let binsChart = showPanel
+        .append('g')
+       // .attr('transform', function(d){
+       // //    return 'translate(' + that.width * 0.1 + ',0' + ')' 
+       /// })
+        .selectAll('bins')
         .data(bins_array)
         .enter()
         .append('rect')
+        .attr('class','binRect')
         .attr('x', d => {
-            console.log(d.key, x_scale(d.key))
-            return x_scale(d.key) + that.width * 0.1
+            return x_scale(d.key)
         })
         .attr('y', d => that.height + offset - y_scale(d.value) / 2)
         .attr('width', d => 70 / bins_array.length)
@@ -481,7 +531,7 @@ export default class BlueComponent {
     //Get the selected range of users' filter operation
     getFilterRangeAndDim(){
 
-        return {'range':this.filterRange,'dim':this.dimPreview}
+        return {'range':this.filterRange, 'dim':this.dimPreview}
     }
     //After data joined, add the data name to the ports' name 
     addDataName2Ports(){
@@ -492,8 +542,9 @@ export default class BlueComponent {
         })
     }
     remove(){
-        this.container.remove()
 
+        this.container.selectAll('*').remove()
+        this.container.remove()
         this.isDelete = true
 
     }
