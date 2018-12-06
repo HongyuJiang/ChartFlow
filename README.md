@@ -19,7 +19,13 @@
 
 ## Roadmap
 
-TBA
+- Support zoom and navigator(with a preview window) for the work borad.
+
+- Add multi work borad, user can add multi borad and easy switch in them.
+
+- Enable to define the interaction logic with blueprint
+
+- Layout editor: users can define the dashborad's layout
 
 ## Build Setup
 ``` bash
