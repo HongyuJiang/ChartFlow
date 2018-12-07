@@ -17,8 +17,11 @@
 ## Functions
 
 - Data Connector (Outer Join, Inner Join)
+
 - Data Processor (Filter, Normalizer)
+
 - Data Calculator (Sum, Reduce and Multi)
+
 - Data Visualizer (Barchart, Linechart, Scatterplot, Boxplot, Stripplot)
 
 ## Roadmap
