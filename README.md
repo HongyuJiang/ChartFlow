@@ -1,4 +1,4 @@
-# openvis_swust -beta 1.0
+# openvis_swust
 
 [![Build Status](https://travis-ci.org/vega/vega-lite.svg?branch=master)](https://travis-ci.org/vega/vega-lite)
 [![codecov](https://codecov.io/gh/vega/vega-lite/branch/master/graph/badge.svg)](https://codecov.io/gh/vega/vega-lite)
@@ -9,6 +9,10 @@
 > A visualization building tool base on [vega-lite](https://vega.github.io/vega-lite/) and the idea sourced by [Blueprint](https://docs.unrealengine.com/en-us/Engine/Blueprints/GettingStarted). Using module components and connection curve to define the data logic, visualiation and user interaction
 
 ![Demo](demo.gif)
+
+## Version
+
+- 1.01
 
 ## Functions
 
