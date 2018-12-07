@@ -1,4 +1,4 @@
-# openvis_swust
+# AOIKUMO
 
 [![Build Status](https://travis-ci.org/vega/vega-lite.svg?branch=master)](https://travis-ci.org/vega/vega-lite)
 [![codecov](https://codecov.io/gh/vega/vega-lite/branch/master/graph/badge.svg)](https://codecov.io/gh/vega/vega-lite)
@@ -10,9 +10,9 @@
 
 ![Demo](demo.gif)
 
-## Version
+## History
 
-- 1.01
+- 2018.12.7 v1.01
 
 ## Functions
 
