@@ -43,4 +43,4 @@ npm install
 npm run dev
 ```
 
-VIS & VR Team, Southwest University of Science & Technology. 
+版权所有， 我和赵柴 
