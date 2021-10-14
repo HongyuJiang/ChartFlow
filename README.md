@@ -42,5 +42,3 @@ npm install
 # serve with hot reload at localhost:8080
 npm run dev
 ```
-
-版权所有， 我和赵柴 
