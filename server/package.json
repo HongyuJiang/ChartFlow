@@ -15,7 +15,7 @@
     "debug": "~2.6.9",
     "express": "~4.16.0",
     "express-fileupload": "^1.0.0",
-    "flat": "^4.1.0",
+    "flat": "^5.0.1",
     "fs": "0.0.1-security",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
